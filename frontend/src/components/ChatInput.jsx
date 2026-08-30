@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, memo } from "react";
 
 function ChatInput({ disabled, uploading, uploadProgress, hasDocument, onSendMessage, onUpload }) {
     const [message, setMessage] = useState("");
@@ -109,4 +109,4 @@ function ChatInput({ disabled, uploading, uploadProgress, hasDocument, onSendMes
     );
 }
 
-export default ChatInput;
+export default memo(ChatInput);

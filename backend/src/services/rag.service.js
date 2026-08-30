@@ -2,11 +2,37 @@ const { createQueryEmbedding } = require("./embedding.service");
 
 const { searchChunks } = require("./vector.service");
 
-const { generateAnswer } = require("./nvidia.service");
+const { generateAnswer, generateAnswerStream } = require("./nvidia.service");
 
-async function answerQuestion(question, documentId) {
+function buildRagMessages(question, context, chatHistory = []) {
+  const systemMessage = {
+    role: "system",
+    content: `You are a helpful assistant. Answer questions using only the provided PDF context below.
+If the answer is not available in the context, say: "I could not find this information in the uploaded PDF."
+
+Context:
+${context}`,
+  };
+
+  const formattedHistory = Array.isArray(chatHistory)
+    ? chatHistory.map((item) => ({
+        role: item.role,
+        content: item.content,
+      }))
+    : [];
+
+  return [
+    systemMessage,
+    ...formattedHistory,
+    {
+      role: "user",
+      content: question,
+    },
+  ];
+}
+
+async function answerQuestion(question, documentId, chatHistory = []) {
   const queryEmbedding = await createQueryEmbedding(question);
-
   const chunks = await searchChunks(queryEmbedding, documentId);
 
   if (!chunks || chunks.length === 0) {
@@ -17,32 +43,37 @@ async function answerQuestion(question, documentId) {
     .map((chunk, index) => `[${index + 1}] ${chunk.text}`)
     .join("\n\n");
 
-  const prompt = `
-Answer the question using only the context provided below.
+  const messages = buildRagMessages(question, context, chatHistory);
+  return await generateAnswer(messages);
+}
 
-If the answer is not available in the context, say:
-"I could not find this information in the uploaded PDF."
+async function answerQuestionStream(
+  question,
+  documentId,
+  chatHistory = [],
+  onChunk,
+) {
+  const queryEmbedding = await createQueryEmbedding(question);
+  const chunks = await searchChunks(queryEmbedding, documentId);
 
-Context:
-${context}
+  if (!chunks || chunks.length === 0) {
+    const notFoundText =
+      "I could not find relevant information in the uploaded PDF.";
+    if (typeof onChunk === "function") {
+      onChunk(notFoundText);
+    }
+    return notFoundText;
+  }
 
-Question:
-${question}
-`;
+  const context = chunks
+    .map((chunk, index) => `[${index + 1}] ${chunk.text}`)
+    .join("\n\n");
 
-  return await generateAnswer([
-    {
-      role: "system",
-      content: `You are a helpful assistant.
-Answer questions using only the provided PDF context.`,
-    },
-    {
-      role: "user",
-      content: prompt,
-    },
-  ]);
+  const messages = buildRagMessages(question, context, chatHistory);
+  return await generateAnswerStream(messages, onChunk);
 }
 
 module.exports = {
   answerQuestion,
+  answerQuestionStream,
 };

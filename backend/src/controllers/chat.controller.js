@@ -1,10 +1,13 @@
+const { validate: isUUID } = require("uuid");
 const conversationModel = require("../models/conversation.model");
 const messageModel = require("../models/message.model");
 const ragService = require("../services/rag.service");
-const { generateAnswer } = require("../services/nvidia.service");
+const { generateAnswerStream } = require("../services/nvidia.service");
 const { generateConversationTitle } = require("../services/title.service");
 
 async function chat(req, res) {
+  let headersSent = false;
+
   try {
     const { conversationId, message } = req.body;
 
@@ -14,16 +17,23 @@ async function chat(req, res) {
       });
     }
 
-    const conversation =
-      await conversationModel.getConversation(conversationId);
+    if (!isUUID(conversationId)) {
+      return res.status(400).json({
+        message: "Invalid conversation ID",
+      });
+    }
+
+    // Parallelize conversation and message history fetch to reduce TTFT
+    const [conversation, previousMessages] = await Promise.all([
+      conversationModel.getConversation(conversationId),
+      messageModel.getMessages(conversationId),
+    ]);
 
     if (!conversation) {
       return res.status(404).json({
         message: "Conversation not found",
       });
     }
-
-    const previousMessages = await messageModel.getMessages(conversationId);
 
     const chatHistory = previousMessages.slice(-10).map((item) => ({
       role: item.role,
@@ -33,15 +43,55 @@ async function chat(req, res) {
     const isFirstMessage =
       conversation.title === "New Chat" && previousMessages.length === 0;
 
-    await messageModel.createMessage(conversationId, "user", message.trim());
+    // Start saving user message in parallel with stream initialization
+    const saveUserMessagePromise = messageModel.createMessage(
+      conversationId,
+      "user",
+      message.trim(),
+    );
 
-    let answerPromise;
+    // Setup Server-Sent Events headers immediately
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache, no-transform");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    if (typeof res.flushHeaders === "function") {
+      res.flushHeaders();
+    }
+    headersSent = true;
+
+    const sendChunk = (token) => {
+      res.write(`data: ${JSON.stringify({ token })}\n\n`);
+    };
+
+    // Start title generation concurrently in parallel with answer streaming
+    let titlePromise = null;
+    if (isFirstMessage) {
+      titlePromise = generateConversationTitle(message.trim())
+        .then(async (title) => {
+          if (!title) return null;
+          // Push title over the active SSE stream immediately to the client
+          res.write(`data: ${JSON.stringify({ title })}\n\n`);
+          await conversationModel.updateConversationTitle(
+            conversationId,
+            title,
+          );
+          return title;
+        })
+        .catch((error) => {
+          console.error("Title generation error:", error.message);
+          return null;
+        });
+    }
+
+    let answer = "";
 
     if (conversation.document_id) {
-      answerPromise = ragService.answerQuestion(
+      answer = await ragService.answerQuestionStream(
         message.trim(),
         conversation.document_id,
         chatHistory,
+        sendChunk,
       );
     } else {
       const messages = [
@@ -56,45 +106,38 @@ async function chat(req, res) {
         },
       ];
 
-      answerPromise = generateAnswer(messages);
+      answer = await generateAnswerStream(messages, sendChunk);
     }
 
-    const titlePromise = isFirstMessage
-      ? generateConversationTitle(message.trim())
-      : null;
-
-    const answer = await answerPromise;
-
-    if (!answer) {
-      throw new Error("LLM returned an empty answer");
+    if (!answer || !answer.trim()) {
+      answer = "I'm sorry, I was unable to generate a response.";
+      sendChunk(answer);
     }
 
+    // Ensure user message is saved, then persist assistant message to database
+    await saveUserMessagePromise;
     await messageModel.createMessage(conversationId, "assistant", answer);
 
-    res.json({
-      answer,
-    });
-
     if (titlePromise) {
-      titlePromise
-        .then(async (title) => {
-          if (!title) return;
-
-          await conversationModel.updateConversationTitle(
-            conversationId,
-            title,
-          );
-        })
-        .catch((error) => {
-          console.error("Title generation error:", error.message);
-        });
+      await titlePromise;
     }
-  } catch (error) {
-    console.error("ERROR:", error.message);
 
-    res.status(500).json({
-      message: error.message,
-    });
+    res.write("data: [DONE]\n\n");
+    res.end();
+  } catch (error) {
+    console.error("Chat streaming error:", error.message || error);
+
+    if (!headersSent) {
+      res.status(500).json({
+        message: error.message || "Failed to process chat message",
+      });
+    } else {
+      res.write(
+        `data: ${JSON.stringify({ error: error.message || "Streaming interrupted" })}\n\n`,
+      );
+      res.write("data: [DONE]\n\n");
+      res.end();
+    }
   }
 }
 

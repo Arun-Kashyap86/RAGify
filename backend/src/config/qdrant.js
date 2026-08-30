@@ -1,9 +1,9 @@
 const { QdrantClient } = require("@qdrant/js-client-rest");
+const config = require("./env");
 
 const client = new QdrantClient({
-    url: process.env.QDRANT_URL,
-    apiKey: process.env.QDRANT_API_KEY 
+  url: config.qdrantUrl,
+  apiKey: config.qdrantApiKey,
 });
-
 
 module.exports = client;

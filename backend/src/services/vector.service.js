@@ -1,160 +1,129 @@
-const { QdrantClient } = require("@qdrant/js-client-rest");
 const { v4: uuidv4 } = require("uuid");
-const config = require("../config/env");
+const client = require("../config/qdrant");
 
 const COLLECTION_NAME = "pdf_chunks";
-
-const client = new QdrantClient({
-    url: config.qdrantUrl,
-    apiKey: config.qdrantApiKey
-});
-
+let collectionInitialized = false;
 
 async function ensureCollection(vectorSize) {
-    const collections = await client.getCollections();
+  if (collectionInitialized) return;
 
+  try {
+    const collections = await client.getCollections();
     const exists = collections.collections.some(
-        collection => collection.name === COLLECTION_NAME
+      (collection) => collection.name === COLLECTION_NAME,
     );
 
     if (!exists) {
-        await client.createCollection(
-            COLLECTION_NAME,
-            {
-                vectors: {
-                    size: vectorSize,
-                    distance: "Cosine"
-                }
-            }
-        );
-
-        console.log(`Collection ${COLLECTION_NAME} created`);
+      await client.createCollection(COLLECTION_NAME, {
+        vectors: {
+          size: vectorSize,
+          distance: "Cosine",
+        },
+      });
+      console.log(`Collection ${COLLECTION_NAME} created`);
     }
 
     try {
-        await client.createPayloadIndex(
-            COLLECTION_NAME,
-            {
-                field_name: "documentId",
-                field_schema: "keyword",
-                wait: true
-            }
-        );
+      await client.createPayloadIndex(COLLECTION_NAME, {
+        field_name: "documentId",
+        field_schema: "keyword",
+        wait: true,
+      });
     } catch (error) {
-        // Index may already exist
+      // Index may already exist
     }
+
+    collectionInitialized = true;
+  } catch (error) {
+    console.error("Failed to initialize Qdrant collection:", error.message);
+    throw error;
+  }
 }
 
+async function storeChunks(documentId, chunks, embeddings) {
+  if (!embeddings || embeddings.length === 0) {
+    throw new Error("No embeddings provided");
+  }
 
-async function storeChunks(
-    documentId,
-    chunks,
-    embeddings
-) {
-    if (!embeddings || embeddings.length === 0) {
-        throw new Error("No embeddings provided");
-    }
+  if (chunks.length !== embeddings.length) {
+    throw new Error("Chunks and embeddings length do not match");
+  }
 
-    if (chunks.length !== embeddings.length) {
-        throw new Error(
-            "Chunks and embeddings length do not match"
-        );
-    }
+  const vectorSize = embeddings[0].length;
 
-    const vectorSize = embeddings[0].length;
+  await ensureCollection(vectorSize);
 
-    await ensureCollection(vectorSize);
+  const points = chunks.map((chunk, index) => ({
+    id: uuidv4(),
+    vector: embeddings[index],
+    payload: {
+      documentId: String(documentId),
+      chunkIndex: index,
+      text: chunk,
+    },
+  }));
 
-    const points = chunks.map(
-        (chunk, index) => ({
-            id: uuidv4(),
+  // Upsert in batches of 100 to avoid payload size/timeout limits
+  const BATCH_SIZE = 100;
+  for (let i = 0; i < points.length; i += BATCH_SIZE) {
+    const batch = points.slice(i, i + BATCH_SIZE);
+    await client.upsert(COLLECTION_NAME, {
+      wait: true,
+      points: batch,
+    });
+  }
 
-            vector: embeddings[index],
+  console.log(`${points.length} chunks stored in Qdrant`);
+}
 
-            payload: {
-                documentId: String(documentId),
-                chunkIndex: index,
-                text: chunk
-            }
-        })
-    );
-
-    await client.upsert(
-        COLLECTION_NAME,
+async function searchChunks(queryEmbedding, documentId, limit = 3) {
+  const response = await client.query(COLLECTION_NAME, {
+    query: queryEmbedding,
+    limit,
+    with_payload: true,
+    filter: {
+      must: [
         {
-            wait: true,
-            points
-        }
-    );
+          key: "documentId",
+          match: {
+            value: String(documentId),
+          },
+        },
+      ],
+    },
+  });
 
-    console.log(
-        `${points.length} chunks stored in Qdrant`
-    );
+  const points = response.points || [];
+
+  return points.map((point) => ({
+    id: point.id,
+    score: point.score,
+    text: point.payload?.text || "",
+    chunkIndex: point.payload?.chunkIndex,
+  }));
 }
-
-
-async function searchChunks(
-    queryEmbedding,
-    documentId,
-    limit = 5
-) {
-    const response = await client.query(
-        COLLECTION_NAME,
-        {
-            query: queryEmbedding,
-            limit,
-            with_payload: true,
-            filter: {
-                must: [
-                    {
-                        key: "documentId",
-                        match: {
-                            value: String(documentId)
-                        }
-                    }
-                ]
-            }
-        }
-    );
-
-    const points = response.points || [];
-
-    return points.map(point => ({
-        id: point.id,
-        score: point.score,
-        text: point.payload?.text || "",
-        chunkIndex: point.payload?.chunkIndex
-    }));
-}
-
 
 async function deleteDocumentVectors(documentId) {
-    await client.delete(
-        COLLECTION_NAME,
+  await client.delete(COLLECTION_NAME, {
+    wait: true,
+
+    filter: {
+      must: [
         {
-            wait: true,
+          key: "documentId",
+          match: {
+            value: String(documentId),
+          },
+        },
+      ],
+    },
+  });
 
-            filter: {
-                must: [
-                    {
-                        key: "documentId",
-                        match: {
-                            value: String(documentId)
-                        }
-                    }
-                ]
-            }
-        }
-    );
-
-    console.log(
-        `Vectors deleted for document ${documentId}`
-    );
+  console.log(`Vectors deleted for document ${documentId}`);
 }
 
-
 module.exports = {
-    storeChunks,
-    searchChunks,
-    deleteDocumentVectors
+  storeChunks,
+  searchChunks,
+  deleteDocumentVectors,
 };

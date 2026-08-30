@@ -1,8 +1,15 @@
 const axios = require("axios");
+const https = require("https");
 const config = require("../config/env");
 
 const NVIDIA_EMBEDDING_URL = "https://integrate.api.nvidia.com/v1/embeddings";
 const BATCH_SIZE = 64;
+
+const httpsAgent = new https.Agent({
+  keepAlive: true,
+  maxSockets: 50,
+  keepAliveMsecs: 60000,
+});
 
 async function createEmbeddings(texts) {
   const embeddings = [];
@@ -23,6 +30,7 @@ async function createEmbeddings(texts) {
         encoding_format: "float",
       },
       {
+        httpsAgent,
         headers: {
           Authorization: `Bearer ${config.nvidiaApiKey}`,
           "Content-Type": "application/json",
@@ -48,6 +56,7 @@ async function createQueryEmbedding(text) {
       encoding_format: "float",
     },
     {
+      httpsAgent,
       headers: {
         Authorization: `Bearer ${config.nvidiaApiKey}`,
         "Content-Type": "application/json",

@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 function Sidebar({
     conversations,
     activeConversationId,
@@ -77,4 +79,4 @@ function Sidebar({
     );
 }
 
-export default Sidebar;
+export default memo(Sidebar);

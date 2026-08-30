@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import ChatInput from "./ChatInput";
 import ErrorMessage from "./ErrorMessage";
 import Message from "./Message";
-import PdfUpload from "./PdfUpload";
 
 function ChatWindow({
     conversation,
@@ -73,21 +72,14 @@ function ChatWindow({
                     </div>
                 )}
 
-                {!loading && messages.map((message) => (
+                {!loading && messages.map((message, index) => (
                     <Message
                         key={message.id}
                         role={message.role}
                         content={message.content}
+                        isStreaming={sending && index === messages.length - 1 && message.role === "assistant"}
                     />
                 ))}
-
-                {sending && (
-                    <div className="message-row assistant-row">
-                        <div className="message assistant-message typing-message">
-                            Generating answer...
-                        </div>
-                    </div>
-                )}
 
                 <div ref={bottomRef} />
             </section>
