@@ -24,7 +24,7 @@ async function generateAnswer(messages, options = {}) {
     model: options.model || config.llmModel,
     messages,
     temperature: options.temperature ?? 0.2,
-    max_tokens: options.max_tokens || 1000,
+    max_tokens: options.max_tokens || 2000,
   });
 
   return response.data.choices[0].message.content;
