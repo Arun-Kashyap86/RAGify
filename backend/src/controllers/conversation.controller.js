@@ -1,4 +1,3 @@
-const fs = require("fs").promises;
 const conversationModel = require("../models/conversation.model");
 const messageModel = require("../models/message.model");
 const documentModel = require("../models/document.model");
@@ -8,9 +7,11 @@ const { validate: isUUID } = require("uuid");
 async function createConversation(req, res) {
   try {
     const { title } = req.body;
+    const userId = req.user?.id || null;
 
     const conversation = await conversationModel.createConversation(
       title || "New Chat",
+      userId,
     );
 
     res.status(201).json(conversation);
@@ -25,7 +26,8 @@ async function createConversation(req, res) {
 
 async function getConversations(req, res) {
   try {
-    const conversations = await conversationModel.getConversations();
+    const userId = req.user?.id || null;
+    const conversations = await conversationModel.getConversations(userId);
 
     res.json(conversations);
   } catch (error) {
@@ -40,6 +42,7 @@ async function getConversations(req, res) {
 async function getConversation(req, res) {
   try {
     const { id } = req.params;
+    const userId = req.user?.id || null;
 
     if (!isUUID(id)) {
       return res.status(400).json({
@@ -47,7 +50,7 @@ async function getConversation(req, res) {
       });
     }
 
-    const conversation = await conversationModel.getConversation(id);
+    const conversation = await conversationModel.getConversation(id, userId);
 
     if (!conversation) {
       return res.status(404).json({
@@ -73,6 +76,7 @@ async function getConversation(req, res) {
 async function deleteConversation(req, res) {
   try {
     const { id } = req.params;
+    const userId = req.user?.id || null;
 
     if (!isUUID(id)) {
       return res.status(400).json({
@@ -80,7 +84,7 @@ async function deleteConversation(req, res) {
       });
     }
 
-    const conversation = await conversationModel.getConversation(id);
+    const conversation = await conversationModel.getConversation(id, userId);
 
     if (!conversation) {
       return res.status(404).json({
@@ -90,17 +94,7 @@ async function deleteConversation(req, res) {
 
     if (conversation.document_id) {
       try {
-        const document = await documentModel.getDocument(
-          conversation.document_id,
-        );
         await deleteDocumentVectors(conversation.document_id);
-        if (document && document.file_path) {
-          try {
-            await fs.unlink(document.file_path);
-          } catch (fileErr) {
-            // File may have been deleted already
-          }
-        }
         await documentModel.deleteDocument(conversation.document_id);
       } catch (docCleanupErr) {
         console.error(
@@ -110,7 +104,7 @@ async function deleteConversation(req, res) {
       }
     }
 
-    await conversationModel.deleteConversation(id);
+    await conversationModel.deleteConversation(id, userId);
 
     res.json({
       message: "Conversation deleted",

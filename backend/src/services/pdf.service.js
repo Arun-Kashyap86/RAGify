@@ -1,9 +1,8 @@
 const { PDFParse } = require("pdf-parse");
 
-async function extractText(filePath) {
-  const parser = new PDFParse({
-    url: filePath,
-  });
+async function extractText(input) {
+  const options = Buffer.isBuffer(input) ? { data: input } : { url: input };
+  const parser = new PDFParse(options);
 
   try {
     const data = await parser.getText();

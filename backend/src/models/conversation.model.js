@@ -1,19 +1,32 @@
 const db = require("../config/db");
 
-async function createConversation(title) {
+async function createConversation(title, userId = null) {
   const result = await db.query(
     `
-        INSERT INTO conversations (title)
-        VALUES ($1)
+        INSERT INTO conversations (title, user_id)
+        VALUES ($1, $2)
         RETURNING *;
         `,
-    [title],
+    [title, userId],
   );
 
   return result.rows[0];
 }
 
-async function getConversations() {
+async function getConversations(userId = null) {
+  if (userId) {
+    const result = await db.query(
+      `
+          SELECT *
+          FROM conversations
+          WHERE user_id = $1
+          ORDER BY created_at DESC;
+          `,
+      [userId],
+    );
+    return result.rows;
+  }
+
   const result = await db.query(
     `
         SELECT *
@@ -25,7 +38,19 @@ async function getConversations() {
   return result.rows;
 }
 
-async function getConversation(id) {
+async function getConversation(id, userId = null) {
+  if (userId) {
+    const result = await db.query(
+      `
+          SELECT *
+          FROM conversations
+          WHERE id = $1 AND user_id = $2;
+          `,
+      [id, userId],
+    );
+    return result.rows[0];
+  }
+
   const result = await db.query(
     `
         SELECT *
@@ -38,7 +63,19 @@ async function getConversation(id) {
   return result.rows[0];
 }
 
-async function deleteConversation(id) {
+async function deleteConversation(id, userId = null) {
+  if (userId) {
+    const result = await db.query(
+      `
+          DELETE FROM conversations
+          WHERE id = $1 AND user_id = $2
+          RETURNING *;
+          `,
+      [id, userId],
+    );
+    return result.rows[0];
+  }
+
   const result = await db.query(
     `
         DELETE FROM conversations

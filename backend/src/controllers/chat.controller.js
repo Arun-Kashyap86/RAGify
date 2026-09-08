@@ -23,9 +23,11 @@ async function chat(req, res) {
       });
     }
 
+    const userId = req.user?.id || null;
+
     // Parallelize conversation and message history fetch to reduce TTFT
     const [conversation, previousMessages] = await Promise.all([
-      conversationModel.getConversation(conversationId),
+      conversationModel.getConversation(conversationId, userId),
       messageModel.getMessages(conversationId),
     ]);
 
@@ -41,7 +43,9 @@ async function chat(req, res) {
     }));
 
     const isFirstMessage =
-      conversation.title === "New Chat" && previousMessages.length === 0;
+      (!conversation.title ||
+        conversation.title.trim().toLowerCase() === "new chat") &&
+      previousMessages.length === 0;
 
     // Start saving user message in parallel with stream initialization
     const saveUserMessagePromise = messageModel.createMessage(
@@ -125,6 +129,16 @@ async function chat(req, res) {
     res.write("data: [DONE]\n\n");
     res.end();
   } catch (error) {
+    if (
+      error.message === "aborted" ||
+      error.code === "ECONNABORTED" ||
+      req.destroyed ||
+      res.writableEnded
+    ) {
+      console.log("Chat stream was cancelled or closed by client.");
+      return;
+    }
+
     console.error("Chat streaming error:", error.message || error);
 
     if (!headersSent) {
@@ -132,11 +146,15 @@ async function chat(req, res) {
         message: error.message || "Failed to process chat message",
       });
     } else {
-      res.write(
-        `data: ${JSON.stringify({ error: error.message || "Streaming interrupted" })}\n\n`,
-      );
-      res.write("data: [DONE]\n\n");
-      res.end();
+      try {
+        res.write(
+          `data: ${JSON.stringify({ error: error.message || "Streaming interrupted" })}\n\n`,
+        );
+        res.write("data: [DONE]\n\n");
+        res.end();
+      } catch (writeErr) {
+        // Stream already closed
+      }
     }
   }
 }

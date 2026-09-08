@@ -11,6 +11,7 @@ const config = {
   databaseUrl: process.env.DATABASE_URL,
   qdrantUrl: process.env.QDRANT_URL,
   qdrantApiKey: process.env.QDRANT_API_KEY,
+  jwtSecret: process.env.JWT_SECRET || "ragify-super-secret-jwt-key-2026",
 };
 
 if (!config.nvidiaApiKey) {

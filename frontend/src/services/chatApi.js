@@ -14,18 +14,25 @@ export async function sendMessage(conversationId, message) {
 export async function streamMessage(
   conversationId,
   message,
-  { onChunk, onTitle, onDone, onError },
+  { onChunk, onTitle, onDone, onError, signal },
 ) {
   try {
+    const token = localStorage.getItem("ragify_token");
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${BASE_URL}/chat`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({
         conversationId,
         message,
       }),
+      signal,
     });
 
     if (!response.ok) {
@@ -86,6 +93,11 @@ export async function streamMessage(
 
     onDone?.();
   } catch (error) {
+    if (error.name === "AbortError") {
+      onDone?.();
+      return;
+    }
+
     if (typeof onError === "function") {
       onError(error);
     } else {

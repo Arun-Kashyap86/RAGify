@@ -24,10 +24,10 @@ async function generateAnswer(messages, options = {}) {
     model: options.model || config.llmModel,
     messages,
     temperature: options.temperature ?? 0.2,
-    max_tokens: options.max_tokens || 2000,
+    max_tokens: options.max_tokens || 4096,
   });
 
-  return response.data.choices[0].message.content;
+  return response.data?.choices?.[0]?.message?.content || "";
 }
 
 async function generateAnswerStream(messages, onChunk, options = {}) {
@@ -37,7 +37,7 @@ async function generateAnswerStream(messages, onChunk, options = {}) {
       model: options.model || config.llmModel,
       messages,
       temperature: options.temperature ?? 0.2,
-      max_tokens: options.max_tokens || 1000,
+      max_tokens: options.max_tokens || 4096,
       stream: true,
     },
     {
