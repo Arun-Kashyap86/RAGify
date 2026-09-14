@@ -11,6 +11,7 @@ const { validate: isValidUUID } = require("uuid");
 
 async function uploadDocument(req, res) {
   let createdDocument = null;
+  const userId = req.user?.id || null;
 
   try {
     const { conversationId } = req.body;
@@ -33,7 +34,6 @@ async function uploadDocument(req, res) {
       });
     }
 
-    const userId = req.user?.id || null;
     const conversation = await conversationModel.getConversation(
       conversationId,
       userId,
@@ -70,13 +70,14 @@ async function uploadDocument(req, res) {
     createdDocument = await documentModel.createDocument(
       req.file.originalname,
       "in-memory",
+      userId,
     );
 
     const embeddings = await createEmbeddings(chunks);
     console.log("Chunks:", chunks.length);
     console.log("Embeddings:", embeddings.length);
 
-    await storeChunks(createdDocument.id, chunks, embeddings);
+    await storeChunks(createdDocument.id, chunks, embeddings, userId);
 
     await conversationModel.attachDocument(conversationId, createdDocument.id);
 
@@ -94,8 +95,8 @@ async function uploadDocument(req, res) {
 
     if (createdDocument) {
       try {
-        await documentModel.deleteDocument(createdDocument.id);
-        await deleteDocumentVectors(createdDocument.id);
+        await documentModel.deleteDocument(createdDocument.id, userId);
+        await deleteDocumentVectors(createdDocument.id, userId);
       } catch (cleanupError) {
         console.error("Cleanup error after failed upload:", cleanupError);
       }

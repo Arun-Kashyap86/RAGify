@@ -111,7 +111,7 @@ async function chat(req, res) {
         conversation.document_id,
         chatHistory,
         sendChunk,
-        { signal },
+        { signal, userId },
       );
     } else {
       const messages = [

@@ -46,7 +46,7 @@ async function answerQuestionStream(
     return "";
   }
 
-  const chunks = await searchChunks(queryEmbedding, documentId);
+  const chunks = await searchChunks(queryEmbedding, documentId, options.userId);
 
   if (options.signal?.aborted) {
     return "";
