@@ -7,7 +7,7 @@ const config = {
   nodeEnv: process.env.NODE_ENV || "development",
   nvidiaApiKey: process.env.NVIDIA_API_KEY,
   embeddingModel: process.env.EMBEDDING_MODEL || process.env.embedding_model,
-  llmModel: process.env.LLM_MODEL || process.env.llm_model_1,
+  llmModel: process.env.LLM_MODEL,
   databaseUrl: process.env.DATABASE_URL,
   qdrantUrl: process.env.QDRANT_URL,
   qdrantApiKey: process.env.QDRANT_API_KEY,

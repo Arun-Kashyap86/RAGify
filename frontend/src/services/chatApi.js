@@ -14,7 +14,7 @@ export async function sendMessage(conversationId, message) {
 export async function streamMessage(
   conversationId,
   message,
-  { onChunk, onTitle, onDone, onError, signal },
+  { onChunk, onTitle, onDone, onError },
 ) {
   try {
     const token = localStorage.getItem("ragify_token");
@@ -32,7 +32,6 @@ export async function streamMessage(
         conversationId,
         message,
       }),
-      signal,
     });
 
     if (!response.ok) {
@@ -93,11 +92,6 @@ export async function streamMessage(
 
     onDone?.();
   } catch (error) {
-    if (error.name === "AbortError") {
-      onDone?.();
-      return;
-    }
-
     if (typeof onError === "function") {
       onError(error);
     } else {

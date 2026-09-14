@@ -1,8 +1,6 @@
 const { createQueryEmbedding } = require("./embedding.service");
-
 const { searchChunks } = require("./vector.service");
-
-const { generateAnswer, generateAnswerStream } = require("./nvidia.service");
+const { generateAnswerStream } = require("./nvidia.service");
 
 function buildRagMessages(question, context, chatHistory = []) {
   const systemMessage = {
@@ -29,22 +27,6 @@ ${context}`,
       content: question,
     },
   ];
-}
-
-async function answerQuestion(question, documentId, chatHistory = []) {
-  const queryEmbedding = await createQueryEmbedding(question);
-  const chunks = await searchChunks(queryEmbedding, documentId);
-
-  if (!chunks || chunks.length === 0) {
-    return "I could not find relevant information in the uploaded PDF.";
-  }
-
-  const context = chunks
-    .map((chunk, index) => `[${index + 1}] ${chunk.text}`)
-    .join("\n\n");
-
-  const messages = buildRagMessages(question, context, chatHistory);
-  return await generateAnswer(messages);
 }
 
 async function answerQuestionStream(
@@ -74,6 +56,5 @@ async function answerQuestionStream(
 }
 
 module.exports = {
-  answerQuestion,
   answerQuestionStream,
 };

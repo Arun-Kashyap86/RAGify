@@ -782,33 +782,6 @@ button:disabled {
     border-radius: 9px;
 }
 
-.chat-input-form .stop-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    padding: 10px;
-    border: none;
-    border-radius: 50%;
-    background: #ffffff;
-    color: #000000;
-    cursor: pointer;
-    transition:
-        background 0.2s ease,
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-.chat-input-form .stop-button:hover:not(:disabled) {
-    background: #dcd9d9;
-    box-shadow: 0 0 12px rgba(199, 196, 196, 0.4);
-}
-
-.chat-input-form .stop-button:active:not(:disabled) {
-    transform: scale(0.97);
-}
-
-
 
 /* =========================
    FILE UPLOAD BUTTON
@@ -1055,8 +1028,7 @@ button:disabled {
         padding: 10px 8px;
     }
 
-    .chat-input-form .send-button,
-    .chat-input-form .stop-button {
+    .chat-input-form .send-button {
         padding: 10px 12px;
         font-size: 13px;
     }

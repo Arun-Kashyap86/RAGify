@@ -25,7 +25,6 @@ async function chat(req, res) {
 
     const userId = req.user?.id || null;
 
-    // Parallelize conversation and message history fetch to reduce TTFT
     const [conversation, previousMessages] = await Promise.all([
       conversationModel.getConversation(conversationId, userId),
       messageModel.getMessages(conversationId),
@@ -43,18 +42,17 @@ async function chat(req, res) {
     }));
 
     const isFirstMessage =
-      (!conversation.title ||
-        conversation.title.trim().toLowerCase() === "new chat") &&
-      previousMessages.length === 0;
+      !conversation.title ||
+      conversation.title.trim().toLowerCase() === "new chat";
 
-    // Start saving user message in parallel with stream initialization
+    // Start saving user message in parallel
     const saveUserMessagePromise = messageModel.createMessage(
       conversationId,
       "user",
       message.trim(),
     );
 
-    // Setup Server-Sent Events headers immediately
+    // Setup Server-Sent Events headers
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache, no-transform");
     res.setHeader("Connection", "keep-alive");
@@ -65,31 +63,14 @@ async function chat(req, res) {
     headersSent = true;
 
     const sendChunk = (token) => {
-      res.write(`data: ${JSON.stringify({ token })}\n\n`);
+      if (!res.writableEnded) {
+        res.write(`data: ${JSON.stringify({ token })}\n\n`);
+      }
     };
-
-    // Start title generation concurrently in parallel with answer streaming
-    let titlePromise = null;
-    if (isFirstMessage) {
-      titlePromise = generateConversationTitle(message.trim())
-        .then(async (title) => {
-          if (!title) return null;
-          // Push title over the active SSE stream immediately to the client
-          res.write(`data: ${JSON.stringify({ title })}\n\n`);
-          await conversationModel.updateConversationTitle(
-            conversationId,
-            title,
-          );
-          return title;
-        })
-        .catch((error) => {
-          console.error("Title generation error:", error.message);
-          return null;
-        });
-    }
 
     let answer = "";
 
+    // 1. Generate and stream the response FIRST (RAG + Chat or Only Chat)
     if (conversation.document_id) {
       answer = await ragService.answerQuestionStream(
         message.trim(),
@@ -101,7 +82,8 @@ async function chat(req, res) {
       const messages = [
         {
           role: "system",
-          content: "Answer the user's question clearly and helpfully.",
+          content:
+            "You are a helpful, intelligent, and concise AI assistant. Answer user queries accurately.",
         },
         ...chatHistory,
         {
@@ -118,12 +100,29 @@ async function chat(req, res) {
       sendChunk(answer);
     }
 
-    // Ensure user message is saved, then persist assistant message to database
+    // Persist user and assistant messages
     await saveUserMessagePromise;
     await messageModel.createMessage(conversationId, "assistant", answer);
 
-    if (titlePromise) {
-      await titlePromise;
+    // 2. AFTER response generation completes, call title generation serially
+    if (isFirstMessage) {
+      try {
+        const title = await generateConversationTitle(message.trim());
+        if (title) {
+          await conversationModel.updateConversationTitle(
+            conversationId,
+            title,
+          );
+          if (!res.writableEnded) {
+            res.write(`data: ${JSON.stringify({ title })}\n\n`);
+          }
+        }
+      } catch (titleError) {
+        console.error(
+          "Title generation error:",
+          titleError.message || titleError,
+        );
+      }
     }
 
     res.write("data: [DONE]\n\n");
@@ -132,26 +131,45 @@ async function chat(req, res) {
     if (
       error.message === "aborted" ||
       error.code === "ECONNABORTED" ||
-      req.destroyed ||
-      res.writableEnded
+      req.signal?.aborted
     ) {
       console.log("Chat stream was cancelled or closed by client.");
       return;
     }
 
-    console.error("Chat streaming error:", error.message || error);
+    let errorDetail = error.message || "An error occurred";
+    if (error.response?.data) {
+      if (typeof error.response.data === "string") {
+        errorDetail = error.response.data;
+      } else if (typeof error.response.data.on === "function") {
+        try {
+          let rawData = "";
+          for await (const chunk of error.response.data) {
+            rawData += chunk.toString();
+          }
+          const parsed = JSON.parse(rawData);
+          errorDetail = parsed.detail || parsed.message || rawData;
+        } catch (_) {}
+      } else if (error.response.data.detail) {
+        errorDetail = error.response.data.detail;
+      } else if (error.response.data.message) {
+        errorDetail = error.response.data.message;
+      }
+    }
+
+    console.error("Chat error:", errorDetail);
 
     if (!headersSent) {
-      res.status(500).json({
-        message: error.message || "Failed to process chat message",
+      res.status(error.response?.status || 500).json({
+        message: errorDetail,
       });
     } else {
       try {
-        res.write(
-          `data: ${JSON.stringify({ error: error.message || "Streaming interrupted" })}\n\n`,
-        );
-        res.write("data: [DONE]\n\n");
-        res.end();
+        if (!res.writableEnded) {
+          res.write(`data: ${JSON.stringify({ error: errorDetail })}\n\n`);
+          res.write("data: [DONE]\n\n");
+          res.end();
+        }
       } catch (writeErr) {
         // Stream already closed
       }

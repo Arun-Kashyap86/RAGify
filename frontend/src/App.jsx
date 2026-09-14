@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import AuthModal from "./components/AuthModal";
 import ChatWindow from "./components/ChatWindow";
 import ErrorMessage from "./components/ErrorMessage";
@@ -28,7 +28,6 @@ function App() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const abortControllerRef = useRef(null);
 
   useEffect(() => {
     const token = localStorage.getItem("ragify_token");
@@ -227,9 +226,6 @@ function App() {
       rafHandle = null;
     };
 
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
     try {
       setError("");
 
@@ -238,7 +234,6 @@ function App() {
       setSending(true);
 
       await streamMessage(conversationId, message, {
-        signal: controller.signal,
         onChunk: (token) => {
           pendingChunk += token;
           if (!rafHandle) {
@@ -263,6 +258,9 @@ function App() {
             cancelAnimationFrame(rafHandle);
           }
           flushBuffer();
+          if (shouldGenerateTitle) {
+            refreshConversationTitle(conversationId);
+          }
         },
         onError: (err) => {
           if (rafHandle) {
@@ -285,17 +283,8 @@ function App() {
         ),
       );
     } finally {
-      abortControllerRef.current = null;
       setSending(false);
     }
-  }
-
-  function handleStopGenerating() {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-    setSending(false);
   }
 
   async function handleDeleteConversation(id) {
@@ -363,11 +352,11 @@ function App() {
             loading={loading}
             sending={sending}
             uploading={uploading}
+            uploadProgress={uploadProgress}
             error={error}
             onClearError={() => setError("")}
             onUpload={handleUpload}
             onSendMessage={handleSendMessage}
-            onStopGenerating={handleStopGenerating}
             onOpenSidebar={() => setSidebarOpen(true)}
           />
         ) : (

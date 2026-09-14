@@ -9,25 +9,9 @@ const authMiddleware = require("./middleware/auth.middleware");
 
 const app = express();
 
-const rawClientUrl = process.env.CLIENT_URL || "";
-const allowedOrigins = rawClientUrl
-  ? rawClientUrl.split(",").map((url) => url.trim())
-  : ["http://localhost:5173", "http://127.0.0.1:5173"];
-
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, server-to-server)
-      if (!origin) return callback(null, true);
-      if (
-        allowedOrigins.includes("*") ||
-        allowedOrigins.includes(origin) ||
-        process.env.NODE_ENV !== "production"
-      ) {
-        return callback(null, true);
-      }
-      return callback(null, true);
-    },
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
   }),
 );

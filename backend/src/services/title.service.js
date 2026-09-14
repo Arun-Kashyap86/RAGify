@@ -3,35 +3,59 @@ const nvidiaService = require("./nvidia.service.js");
 function extractCleanTitle(rawText, fallback) {
   if (!rawText || typeof rawText !== "string") return fallback;
 
-  // 1. Remove reasoning / think blocks (<think>...</think>) from models like DeepSeek-R1
-  let text = rawText.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  // 1. Look for <title>...</title> tags
+  const tagMatch = rawText.match(/<title>([\s\S]*?)<\/title>/i);
+  if (tagMatch && tagMatch[1]) {
+    const cleanedTag = tagMatch[1]
+      .replace(/^["'`]+|["'`]+$/g, "")
+      .replace(/[.#*:]+$/g, "")
+      .trim();
+    if (cleanedTag.length >= 2 && cleanedTag.length <= 60) {
+      return cleanedTag;
+    }
+  }
 
-  // If think tag wasn't closed, remove everything after <think>
+  // 2. Remove thinking tags (<think>...</think>)
+  let text = rawText.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
   if (text.includes("<think>")) {
     text = text.replace(/<think>[\s\S]*/gi, "").trim();
   }
-
   if (!text) return fallback;
 
-  // 2. Split lines and look for the first valid title line
+  // 3. Search from the LAST line backwards (reasoning models put the final answer at the bottom)
   const lines = text
     .split("\n")
     .map((l) => l.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .reverse();
 
   for (let line of lines) {
+    // Skip reasoning or thought lines
+    if (
+      /^(here('s| is)|thinking|thought process|reasoning|analysis|summary:|let's|\d+\.|\-|\*)/i.test(
+        line,
+      )
+    ) {
+      continue;
+    }
+    if (line.endsWith(":") || line.toLowerCase().includes("thinking process")) {
+      continue;
+    }
+
     // Strip common AI prefixes
     let cleaned = line
       .replace(
         /^(\*{1,3}|_{1,3})?(Title|Topic|Subject|Conversation Title):?(\*{1,3}|_{1,3})?\s*/i,
         "",
       )
-      .replace(/^(Here (is|are)|Sure,?\s*here is|Sure thing!?).*?:\s*/i, "")
+      .replace(
+        /^(Here (is|are)|Here's|Sure,?\s*here is|Sure thing!?).*?:\s*/i,
+        "",
+      )
       .replace(/^["'`]+|["'`]+$/g, "")
-      .replace(/[.#*]+$/g, "")
+      .replace(/[.#*:]+$/g, "")
       .trim();
 
-    // Validate clean title (must be between 2 and 60 characters and not HTML/tag)
     if (
       cleaned.length >= 2 &&
       cleaned.length <= 60 &&
@@ -64,16 +88,16 @@ async function generateConversationTitle(message) {
       {
         role: "system",
         content:
-          "You are a professional conversation titling assistant. Your job is to output a short, clean, 3 to 10 word title that captures the core subject of the user's inquiry.\n\nRules:\n- Output ONLY the title text\n- Do not include 'Title:', quotes, asterisks, or punctuation\n- Do not answer the question\n- Do not output thinking tags or explanations",
+          "You are a conversation titling assistant. Output a short 3 to 5 word title that describes the user's message. Wrap the final title strictly inside <title> and </title> tags. Example: <title>Quantum Computing Basics</title>. Output nothing else.",
       },
       {
         role: "user",
-        content: `What is a short 3-5 word title for a conversation that begins with this inquiry:\n\n"${trimmedMessage.slice(0, 500)}"`,
+        content: `Create a 3-5 word title for a conversation that starts with this message:\n"${trimmedMessage.slice(0, 400)}"`,
       },
     ];
 
     const rawTitle = await nvidiaService.generateAnswer(prompt, {
-      max_tokens: 300,
+      max_tokens: 1024,
       temperature: 0.2,
     });
 
