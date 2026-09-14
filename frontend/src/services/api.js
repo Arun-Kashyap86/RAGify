@@ -18,4 +18,15 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("ragify_token");
+      window.dispatchEvent(new Event("ragify_auth_expired"));
+    }
+    return Promise.reject(error);
+  },
+);
+
 export default api;

@@ -7,6 +7,19 @@ const { generateConversationTitle } = require("../services/title.service");
 
 async function chat(req, res) {
   let headersSent = false;
+  let answer = "";
+  let saveUserMessagePromise = null;
+  const abortController = new AbortController();
+  const { signal } = abortController;
+
+  const handleClientClose = () => {
+    if (!res.writableEnded) {
+      abortController.abort();
+    }
+  };
+
+  req.on("close", handleClientClose);
+  res.on("close", handleClientClose);
 
   try {
     const { conversationId, message } = req.body;
@@ -46,7 +59,7 @@ async function chat(req, res) {
       conversation.title.trim().toLowerCase() === "new chat";
 
     // Start saving user message in parallel
-    const saveUserMessagePromise = messageModel.createMessage(
+    saveUserMessagePromise = messageModel.createMessage(
       conversationId,
       "user",
       message.trim(),
@@ -63,12 +76,10 @@ async function chat(req, res) {
     headersSent = true;
 
     const sendChunk = (token) => {
-      if (!res.writableEnded) {
+      if (!res.writableEnded && !signal.aborted) {
         res.write(`data: ${JSON.stringify({ token })}\n\n`);
       }
     };
-
-    let answer = "";
 
     // 1. Generate and stream the response FIRST (RAG + Chat or Only Chat)
     if (conversation.document_id) {
@@ -77,6 +88,7 @@ async function chat(req, res) {
         conversation.document_id,
         chatHistory,
         sendChunk,
+        { signal },
       );
     } else {
       const messages = [
@@ -92,7 +104,17 @@ async function chat(req, res) {
         },
       ];
 
-      answer = await generateAnswerStream(messages, sendChunk);
+      answer = await generateAnswerStream(messages, sendChunk, { signal });
+    }
+
+    // If client aborted during stream generation
+    if (signal.aborted) {
+      console.log("Chat stream was cancelled or closed by client.");
+      await saveUserMessagePromise;
+      if (answer && answer.trim()) {
+        await messageModel.createMessage(conversationId, "assistant", answer);
+      }
+      return;
     }
 
     if (!answer || !answer.trim()) {
@@ -113,7 +135,7 @@ async function chat(req, res) {
             conversationId,
             title,
           );
-          if (!res.writableEnded) {
+          if (!res.writableEnded && !signal.aborted) {
             res.write(`data: ${JSON.stringify({ title })}\n\n`);
           }
         }
@@ -125,15 +147,28 @@ async function chat(req, res) {
       }
     }
 
-    res.write("data: [DONE]\n\n");
-    res.end();
+    if (!res.writableEnded && !signal.aborted) {
+      res.write("data: [DONE]\n\n");
+      res.end();
+    }
   } catch (error) {
     if (
+      signal.aborted ||
       error.message === "aborted" ||
       error.code === "ECONNABORTED" ||
       req.signal?.aborted
     ) {
       console.log("Chat stream was cancelled or closed by client.");
+      try {
+        if (saveUserMessagePromise) await saveUserMessagePromise;
+        if (answer && answer.trim()) {
+          await messageModel.createMessage(
+            req.body?.conversationId,
+            "assistant",
+            answer,
+          );
+        }
+      } catch (_) {}
       return;
     }
 

@@ -13,29 +13,50 @@ const httpsAgent = new https.Agent({
 
 const CONCURRENCY_LIMIT = 4;
 
-async function fetchBatchEmbedding(batch, batchIndex, totalBatches) {
+async function fetchBatchEmbedding(
+  batch,
+  batchIndex,
+  totalBatches,
+  retries = 2,
+) {
   console.log(
     `Processing embedding batch ${batchIndex + 1}/${totalBatches} (${batch.length} chunks)...`,
   );
 
-  const response = await axios.post(
-    NVIDIA_EMBEDDING_URL,
-    {
-      model: config.embeddingModel,
-      input: batch,
-      input_type: "passage",
-      encoding_format: "float",
-    },
-    {
-      httpsAgent,
-      headers: {
-        Authorization: `Bearer ${config.nvidiaApiKey}`,
-        "Content-Type": "application/json",
-      },
-    },
-  );
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await axios.post(
+        NVIDIA_EMBEDDING_URL,
+        {
+          model: config.embeddingModel,
+          input: batch,
+          input_type: "passage",
+          encoding_format: "float",
+        },
+        {
+          httpsAgent,
+          headers: {
+            Authorization: `Bearer ${config.nvidiaApiKey}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
 
-  return response.data.data.map((item) => item.embedding);
+      return response.data.data.map((item) => item.embedding);
+    } catch (error) {
+      const isRateLimit = error.response?.status === 429;
+      const isServerErr = error.response?.status >= 500;
+      if ((isRateLimit || isServerErr) && attempt < retries) {
+        const delay = (attempt + 1) * 1000;
+        console.warn(
+          `Embedding batch ${batchIndex + 1} attempt ${attempt + 1} failed (${error.response?.status}). Retrying in ${delay}ms...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+      throw error;
+    }
+  }
 }
 
 async function createEmbeddings(texts) {

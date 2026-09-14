@@ -31,6 +31,10 @@ async function generateAnswer(messages, options = {}) {
 }
 
 async function generateAnswerStream(messages, onChunk, options = {}) {
+  if (options.signal?.aborted) {
+    return "";
+  }
+
   const response = await client.post(
     "/chat/completions",
     {
@@ -42,14 +46,56 @@ async function generateAnswerStream(messages, onChunk, options = {}) {
     },
     {
       responseType: "stream",
+      signal: options.signal,
     },
   );
 
   return new Promise((resolve, reject) => {
     let fullText = "";
     let buffer = "";
+    let isSettled = false;
+
+    const cleanup = () => {
+      if (options.signal && onAbort) {
+        options.signal.removeEventListener("abort", onAbort);
+      }
+    };
+
+    const safeResolve = (val) => {
+      if (isSettled) return;
+      isSettled = true;
+      cleanup();
+      resolve(val);
+    };
+
+    const safeReject = (err) => {
+      if (isSettled) return;
+      isSettled = true;
+      cleanup();
+      reject(err);
+    };
+
+    const onAbort = () => {
+      try {
+        response.data.destroy();
+      } catch (_) {}
+      safeResolve(fullText);
+    };
+
+    if (options.signal) {
+      if (options.signal.aborted) {
+        onAbort();
+        return;
+      }
+      options.signal.addEventListener("abort", onAbort, { once: true });
+    }
 
     response.data.on("data", (chunk) => {
+      if (options.signal?.aborted) {
+        onAbort();
+        return;
+      }
+
       buffer += chunk.toString("utf-8");
       const lines = buffer.split("\n");
       // Keep the last segment (might be incomplete line)
@@ -100,11 +146,19 @@ async function generateAnswerStream(messages, onChunk, options = {}) {
           }
         }
       }
-      resolve(fullText);
+      safeResolve(fullText);
     });
 
     response.data.on("error", (error) => {
-      reject(error);
+      if (
+        options.signal?.aborted ||
+        error.code === "ERR_CANCELED" ||
+        error.message === "canceled"
+      ) {
+        safeResolve(fullText);
+      } else {
+        safeReject(error);
+      }
     });
   });
 }

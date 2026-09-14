@@ -34,9 +34,23 @@ async function answerQuestionStream(
   documentId,
   chatHistory = [],
   onChunk,
+  options = {},
 ) {
+  if (options.signal?.aborted) {
+    return "";
+  }
+
   const queryEmbedding = await createQueryEmbedding(question);
+
+  if (options.signal?.aborted) {
+    return "";
+  }
+
   const chunks = await searchChunks(queryEmbedding, documentId);
+
+  if (options.signal?.aborted) {
+    return "";
+  }
 
   if (!chunks || chunks.length === 0) {
     const notFoundText =
@@ -52,7 +66,7 @@ async function answerQuestionStream(
     .join("\n\n");
 
   const messages = buildRagMessages(question, context, chatHistory);
-  return await generateAnswerStream(messages, onChunk);
+  return await generateAnswerStream(messages, onChunk, options);
 }
 
 module.exports = {

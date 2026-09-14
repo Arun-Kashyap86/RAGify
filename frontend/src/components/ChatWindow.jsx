@@ -14,6 +14,7 @@ function ChatWindow({
   onClearError,
   onUpload,
   onSendMessage,
+  onStopStreaming,
   onOpenSidebar,
 }) {
   const containerRef = useRef(null);
@@ -114,11 +115,13 @@ function ChatWindow({
       <div className="chat-input-container">
         <ChatInput
           disabled={sending}
+          isStreaming={sending}
           uploading={uploading}
           uploadProgress={uploadProgress}
           hasDocument={hasDocument}
           onUpload={onUpload}
           onSendMessage={onSendMessage}
+          onStopStreaming={onStopStreaming}
         />
       </div>
     </main>

@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import AuthModal from "./components/AuthModal";
 import ChatWindow from "./components/ChatWindow";
 import ErrorMessage from "./components/ErrorMessage";
 import Sidebar from "./components/Sidebar";
 import WelcomeScreen from "./components/WelcomeScreen";
 import { getMe } from "./services/authApi";
-import { sendMessage, streamMessage } from "./services/chatApi";
+import { streamMessage } from "./services/chatApi";
 import {
   createConversation,
   deleteConversation,
@@ -28,6 +28,20 @@ function App() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const abortControllerRef = useRef(null);
+
+  useEffect(() => {
+    function handleAuthExpired() {
+      handleLogout();
+      setError("Your session has expired. Please log in again.");
+    }
+
+    window.addEventListener("ragify_auth_expired", handleAuthExpired);
+    return () => {
+      window.removeEventListener("ragify_auth_expired", handleAuthExpired);
+    };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("ragify_token");
@@ -183,10 +197,18 @@ function App() {
           );
           break;
         }
-      } catch (err) {
+      } catch {
         // Ignore background polling errors
       }
     }
+  }
+
+  function handleStopStreaming() {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setSending(false);
   }
 
   async function handleSendMessage(message) {
@@ -233,7 +255,11 @@ function App() {
 
       setSending(true);
 
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       await streamMessage(conversationId, message, {
+        signal: controller.signal,
         onChunk: (token) => {
           pendingChunk += token;
           if (!rafHandle) {
@@ -258,6 +284,20 @@ function App() {
             cancelAnimationFrame(rafHandle);
           }
           flushBuffer();
+          // If stopped before any token arrived, clean up empty assistant placeholder
+          setMessages((current) => {
+            const assistantMsg = current.find(
+              (m) => m.id === assistantMessageId,
+            );
+            if (
+              assistantMsg &&
+              !assistantMsg.content.trim() &&
+              !pendingChunk.trim()
+            ) {
+              return current.filter((m) => m.id !== assistantMessageId);
+            }
+            return current;
+          });
           if (shouldGenerateTitle) {
             refreshConversationTitle(conversationId);
           }
@@ -268,6 +308,19 @@ function App() {
           }
           flushBuffer();
           setError(err.message || "Failed to generate response.");
+          // Clean up empty assistant placeholder so it doesn't stay stuck in "Thinking..."
+          setMessages((current) => {
+            const assistantMsg = current.find(
+              (m) => m.id === assistantMessageId,
+            );
+            if (assistantMsg && !assistantMsg.content.trim()) {
+              return current.filter(
+                (item) =>
+                  item.id !== userMessage.id && item.id !== assistantMessageId,
+              );
+            }
+            return current;
+          });
         },
       });
     } catch (error) {
@@ -283,6 +336,7 @@ function App() {
         ),
       );
     } finally {
+      abortControllerRef.current = null;
       setSending(false);
     }
   }
@@ -357,6 +411,7 @@ function App() {
             onClearError={() => setError("")}
             onUpload={handleUpload}
             onSendMessage={handleSendMessage}
+            onStopStreaming={handleStopStreaming}
             onOpenSidebar={() => setSidebarOpen(true)}
           />
         ) : (
