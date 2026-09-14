@@ -30,3 +30,9 @@ CREATE TABLE IF NOT EXISTS messages (
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_id_created_at
+ON messages (conversation_id, created_at ASC);
+
+CREATE INDEX IF NOT EXISTS idx_conversations_user_id_created_at
+ON conversations (user_id, created_at DESC);

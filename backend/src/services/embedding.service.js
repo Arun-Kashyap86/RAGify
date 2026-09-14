@@ -35,6 +35,7 @@ async function fetchBatchEmbedding(
         },
         {
           httpsAgent,
+          timeout: 30000,
           headers: {
             Authorization: `Bearer ${config.nvidiaApiKey}`,
             "Content-Type": "application/json",
@@ -98,6 +99,7 @@ async function createQueryEmbedding(text) {
     },
     {
       httpsAgent,
+      timeout: 30000,
       headers: {
         Authorization: `Bearer ${config.nvidiaApiKey}`,
         "Content-Type": "application/json",

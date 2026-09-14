@@ -459,21 +459,50 @@ button:disabled {
     flex: 1;
     min-height: 0;
     width: 100%;
-    max-width: 920px;
-    margin: 0 auto;
     padding: 36px 30px;
     overflow-y: auto;
     overflow-x: hidden;
-    scrollbar-width: none;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
 }
 
 .messages-container::-webkit-scrollbar {
-    display: none;
+    width: 14px;
+    display: block;
+}
+
+.messages-container::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 8px 0;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    border-right: 6px solid transparent;
+    background-clip: padding-box;
+    transition: background-color 0.2s ease;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+    background: #528485;
+    border: 3px solid transparent;
+    border-right: 6px solid transparent;
+    background-clip: padding-box;
+}
+
+.messages-container::-webkit-scrollbar-thumb:active {
+    background: #72babb;
+    border: 3px solid transparent;
+    border-right: 6px solid transparent;
+    background-clip: padding-box;
 }
 
 .chat-status,
 .empty-messages {
-    margin-top: 90px;
+    max-width: 860px;
+    margin: 90px auto 0;
     color: #949aa5;
     text-align: center;
 }
@@ -494,7 +523,8 @@ button:disabled {
 .message-row {
     display: flex;
     width: 100%;
-    margin-bottom: 10px;
+    max-width: 860px;
+    margin: 0 auto 10px auto;
 }
 
 .user-row {

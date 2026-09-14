@@ -14,6 +14,9 @@ const requiresSsl =
 
 const poolConfig = {
   connectionString: config.databaseUrl,
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
+  statement_timeout: 30000,
 };
 
 if (requiresSsl) {

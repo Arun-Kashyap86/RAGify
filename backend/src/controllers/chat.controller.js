@@ -40,7 +40,7 @@ async function chat(req, res) {
 
     const [conversation, previousMessages] = await Promise.all([
       conversationModel.getConversation(conversationId, userId),
-      messageModel.getMessages(conversationId),
+      messageModel.getRecentMessages(conversationId, 10),
     ]);
 
     if (!conversation) {
@@ -49,7 +49,7 @@ async function chat(req, res) {
       });
     }
 
-    const chatHistory = previousMessages.slice(-10).map((item) => ({
+    const chatHistory = previousMessages.map((item) => ({
       role: item.role,
       content: item.content,
     }));
@@ -81,7 +81,30 @@ async function chat(req, res) {
       }
     };
 
-    // 1. Generate and stream the response FIRST (RAG + Chat or Only Chat)
+    // Start title generation in background for new conversations (does not delay stream completion)
+    if (isFirstMessage) {
+      (async () => {
+        try {
+          const title = await generateConversationTitle(message.trim());
+          if (title) {
+            await conversationModel.updateConversationTitle(
+              conversationId,
+              title,
+            );
+            if (!res.writableEnded && !signal.aborted) {
+              res.write(`data: ${JSON.stringify({ title })}\n\n`);
+            }
+          }
+        } catch (titleError) {
+          console.error(
+            "Title generation error:",
+            titleError.message || titleError,
+          );
+        }
+      })();
+    }
+
+    // 1. Generate and stream the response (RAG + Chat or Only Chat)
     if (conversation.document_id) {
       answer = await ragService.answerQuestionStream(
         message.trim(),
@@ -126,27 +149,7 @@ async function chat(req, res) {
     await saveUserMessagePromise;
     await messageModel.createMessage(conversationId, "assistant", answer);
 
-    // 2. AFTER response generation completes, call title generation serially
-    if (isFirstMessage) {
-      try {
-        const title = await generateConversationTitle(message.trim());
-        if (title) {
-          await conversationModel.updateConversationTitle(
-            conversationId,
-            title,
-          );
-          if (!res.writableEnded && !signal.aborted) {
-            res.write(`data: ${JSON.stringify({ title })}\n\n`);
-          }
-        }
-      } catch (titleError) {
-        console.error(
-          "Title generation error:",
-          titleError.message || titleError,
-        );
-      }
-    }
-
+    // Conclude response stream immediately so UI is responsive without any lag
     if (!res.writableEnded && !signal.aborted) {
       res.write("data: [DONE]\n\n");
       res.end();

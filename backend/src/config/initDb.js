@@ -57,7 +57,17 @@ async function initDb() {
       );
     `);
 
-    console.log("Database tables initialized successfully");
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_messages_conversation_id_created_at
+      ON messages (conversation_id, created_at ASC);
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_conversations_user_id_created_at
+      ON conversations (user_id, created_at DESC);
+    `);
+
+    console.log("Database tables and indexes initialized successfully");
   } catch (error) {
     console.error("Database initialization error:", error.message || error);
   }

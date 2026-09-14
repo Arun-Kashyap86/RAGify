@@ -73,6 +73,7 @@ function App() {
   }
 
   function handleLogout() {
+    handleStopStreaming();
     localStorage.removeItem("ragify_token");
     setUser(null);
     setConversations([]);
@@ -106,6 +107,7 @@ function App() {
 
   async function handleNewChat() {
     try {
+      handleStopStreaming();
       setCreating(true);
       setError("");
 
@@ -123,7 +125,10 @@ function App() {
   }
 
   async function handleSelectConversation(id) {
+    if (activeConversation?.id === id) return;
+
     try {
+      handleStopStreaming();
       setLoading(true);
       setError("");
 
@@ -178,28 +183,20 @@ function App() {
     }
   }
 
-  async function refreshConversationTitle(conversationId, retries = 4) {
-    for (let i = 0; i < retries; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      try {
-        const data = await getConversation(conversationId);
-        if (
-          data.conversation?.title &&
-          data.conversation.title !== "New Chat"
-        ) {
-          setActiveConversation((current) =>
-            current?.id === conversationId ? data.conversation : current,
-          );
-          setConversations((current) =>
-            current.map((c) =>
-              c.id === conversationId ? data.conversation : c,
-            ),
-          );
-          break;
-        }
-      } catch {
-        // Ignore background polling errors
+  async function refreshConversationTitle(conversationId) {
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      const data = await getConversation(conversationId);
+      if (data.conversation?.title && data.conversation.title !== "New Chat") {
+        setActiveConversation((current) =>
+          current?.id === conversationId ? data.conversation : current,
+        );
+        setConversations((current) =>
+          current.map((c) => (c.id === conversationId ? data.conversation : c)),
+        );
       }
+    } catch {
+      // Ignore background title check error
     }
   }
 
@@ -343,6 +340,9 @@ function App() {
 
   async function handleDeleteConversation(id) {
     try {
+      if (activeConversation?.id === id) {
+        handleStopStreaming();
+      }
       setError("");
 
       await deleteConversation(id);

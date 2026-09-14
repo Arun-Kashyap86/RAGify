@@ -13,6 +13,7 @@ const httpsAgent = new https.Agent({
 const client = axios.create({
   baseURL: NVIDIA_BASE_URL,
   httpsAgent,
+  timeout: 60000,
   headers: {
     Authorization: `Bearer ${config.nvidiaApiKey}`,
     "Content-Type": "application/json",
@@ -54,8 +55,24 @@ async function generateAnswerStream(messages, onChunk, options = {}) {
     let fullText = "";
     let buffer = "";
     let isSettled = false;
+    let inactivityTimer = null;
+
+    const resetInactivityTimer = () => {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        console.warn("NVIDIA stream inactive for 35s. Halting stream.");
+        try {
+          response.data.destroy();
+        } catch (_) {}
+        safeResolve(fullText);
+      }, 35000);
+    };
 
     const cleanup = () => {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+      }
       if (options.signal && onAbort) {
         options.signal.removeEventListener("abort", onAbort);
       }
@@ -75,6 +92,8 @@ async function generateAnswerStream(messages, onChunk, options = {}) {
       reject(err);
     };
 
+    resetInactivityTimer();
+
     const onAbort = () => {
       try {
         response.data.destroy();
@@ -91,6 +110,8 @@ async function generateAnswerStream(messages, onChunk, options = {}) {
     }
 
     response.data.on("data", (chunk) => {
+      resetInactivityTimer();
+
       if (options.signal?.aborted) {
         onAbort();
         return;
