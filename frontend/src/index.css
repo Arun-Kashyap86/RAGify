@@ -20,11 +20,11 @@
 html,
 body,
 #root {
-    width: 100%;
-    height: 100%;
-    height: 100dvh;
-    margin: 0;
-    overflow: hidden;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  margin: 0;
+  overflow: hidden;
   width: 100%;
   height: 100%;
   height: 100dvh;
@@ -54,19 +54,19 @@ button:disabled {
 /* ========================= APPLICATION LAYOUT ========================= */
 
 .app {
-    display: flex;
-    width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 .main-content {
-    flex: 1;
-    min-width: 0;
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   display: flex;
   width: 100%;
   height: 100vh;
@@ -339,13 +339,13 @@ button:disabled {
 /* ========================= WELCOME SCREEN ========================= */
 
 .welcome-screen {
-    display: grid;
-    min-height: 100vh;
-    min-height: 100dvh;
-    height: 100%;
-    place-items: center;
-    padding: 30px 20px;
-    overflow-y: auto;
+  display: grid;
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: 100%;
+  place-items: center;
+  padding: 30px 20px;
+  overflow-y: auto;
   display: grid;
   min-height: 100vh;
   min-height: 100dvh;
@@ -390,13 +390,13 @@ button:disabled {
 /* ========================= CHAT WINDOW ========================= */
 
 .chat-window {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
-    background: #18191f;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: #18191f;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -854,73 +854,74 @@ button:disabled {
 /* ========================= MESSAGE EDIT ========================= */
 
 .message-edit-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .message-edit-textarea {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1px solid #528485;
-    border-radius: 12px;
-    background: #22242c;
-    color: #f4f7f8;
-    font-size: 15px;
-    line-height: 1.6;
-    resize: vertical;
-    outline: none;
-    transition: border-color 0.2s ease;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #528485;
+  border-radius: 12px;
+  background: #22242c;
+  color: #f4f7f8;
+  font-size: 15px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease;
 }
 
 .message-edit-textarea:focus {
-    border-color: #72babb;
+  border-color: #72babb;
 }
 
 .message-edit-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .message-edit-cancel,
 .message-edit-save {
-    padding: 6px 16px;
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease;
+  padding: 6px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
 }
 
 .message-edit-cancel {
-    background: #2a2b33;
-    color: #a0a5b0;
+  background: #2a2b33;
+  color: #a0a5b0;
 }
 
 .message-edit-cancel:hover {
-    background: #35363f;
-    color: #e2e5e9;
+  background: #35363f;
+  color: #e2e5e9;
 }
 
 .message-edit-save {
-    background: #528485;
-    color: #ffffff;
+  background: #528485;
+  color: #ffffff;
 }
 
 .message-edit-save:hover:not(:disabled) {
-    background: #72babb;
-    transform: translateY(-1px);
+  background: #72babb;
+  transform: translateY(-1px);
 }
 
 .message-edit-save:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
-
 
 /* ========================= CHAT INPUT ========================= */
 
@@ -1056,148 +1057,155 @@ button:disabled {
 /* ========================= HEADER ACCOUNT USER PROFILE ========================= */
 
 .welcome-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 16px 20px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 20px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
 }
 
 .header-user-wrapper {
-    position: relative;
-    margin-left: auto;
+  position: relative;
+  margin-left: auto;
 }
 
 .header-user-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 12px 5px 5px;
-    border: 1px solid #2e303b;
-    border-radius: 20px;
-    background: #1e2029;
-    color: #f8fafc;
-    cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 5px;
+  border: 1px solid #2e303b;
+  border-radius: 20px;
+  background: #1e2029;
+  color: #f8fafc;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
 }
 
 .header-user-badge:hover {
-    background: #272a36;
-    border-color: #528485;
-    transform: translateY(-1px);
+  background: #272a36;
+  border-color: #528485;
+  transform: translateY(-1px);
 }
 
 .header-user-avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #528485, #314d4e);
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 13px;
-    flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #528485, #314d4e);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
 }
 
 .header-user-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: #e2e8f0;
-    max-width: 130px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-menu-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 99;
+  position: fixed;
+  inset: 0;
+  z-index: 99;
 }
 
 .user-menu-dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    z-index: 100;
-    width: 230px;
-    padding: 14px;
-    border: 1px solid #2a2c38;
-    border-radius: 14px;
-    background: #181920;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
-    animation: menuFadeIn 0.2s ease;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 100;
+  width: 230px;
+  padding: 14px;
+  border: 1px solid #2a2c38;
+  border-radius: 14px;
+  background: #181920;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  animation: menuFadeIn 0.2s ease;
 }
 
 @keyframes menuFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .user-menu-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding-bottom: 12px;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #262833;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #262833;
 }
 
 .user-menu-icon {
-    color: #72bebf;
-    flex-shrink: 0;
+  color: #72bebf;
+  flex-shrink: 0;
 }
 
 .user-menu-info strong {
-    display: block;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #f1f5f9;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #f1f5f9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-menu-info p {
-    margin: 2px 0 0;
-    font-size: 11.5px;
-    color: #949aa5;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: #949aa5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-menu-logout {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    padding: 9px 12px;
-    border: none;
-    border-radius: 8px;
-    background: rgba(239, 68, 68, 0.1);
-    color: #fca5a5;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .user-menu-logout:hover {
-    background: rgba(239, 68, 68, 0.22);
-    color: #ffffff;
+  background: rgba(239, 68, 68, 0.22);
+  color: #ffffff;
 }
 
 .sidebar-header {
@@ -1343,41 +1351,15 @@ button:disabled {
 }
 
 @media (max-width: 500px) {
-    .header-user-name {
-        display: none;
-    }
+  .header-user-name {
+    display: none;
+  }
 
-    .header-user-badge {
-        padding: 3px;
-        border-radius: 50%;
-    }
+  .header-user-badge {
+    padding: 3px;
+    border-radius: 50%;
+  }
 
-    .auth-overlay {
-        padding: 12px;
-    }
-
-    .auth-card {
-        padding: 24px 18px;
-        border-radius: 14px;
-        max-height: calc(100dvh - 24px);
-    }
-
-    .auth-header {
-        margin-bottom: 18px;
-    }
-
-    .auth-header h2 {
-        font-size: 19px;
-    }
-
-    .auth-header p {
-        font-size: 12.5px;
-    }
-
-    .chat-header {
-        min-height: 60px;
-        padding: 10px 12px;
-    }
   .auth-overlay {
     padding: 12px;
   }
@@ -1388,13 +1370,39 @@ button:disabled {
     max-height: calc(100dvh - 24px);
   }
 
-    .chat-title p {
-        font-size: 11.5px;
-    }
+  .auth-header {
+    margin-bottom: 18px;
+  }
 
-    .messages-container {
-        padding: 14px 10px;
-    }
+  .auth-header h2 {
+    font-size: 19px;
+  }
+
+  .auth-header p {
+    font-size: 12.5px;
+  }
+
+  .chat-header {
+    min-height: 60px;
+    padding: 10px 12px;
+  }
+  .auth-overlay {
+    padding: 12px;
+  }
+
+  .auth-card {
+    padding: 24px 18px;
+    border-radius: 14px;
+    max-height: calc(100dvh - 24px);
+  }
+
+  .chat-title p {
+    font-size: 11.5px;
+  }
+
+  .messages-container {
+    padding: 14px 10px;
+  }
   .auth-header {
     margin-bottom: 18px;
   }
@@ -1420,9 +1428,9 @@ button:disabled {
     font-size: 11.5px;
   }
 
-    .chat-input-container {
-        padding: 8px 8px 12px;
-    }
+  .chat-input-container {
+    padding: 8px 8px 12px;
+  }
   .messages-container {
     padding: 14px 10px;
   }
@@ -1431,22 +1439,22 @@ button:disabled {
     font-size: 14px;
   }
 
-    .chat-input-form textarea {
-        min-height: 38px;
-        padding: 8px 8px;
-        font-size: 14px;
-    }
+  .chat-input-form textarea {
+    min-height: 38px;
+    padding: 8px 8px;
+    font-size: 14px;
+  }
 
-    .chat-input-form .send-button,
-    .chat-input-form .stop-button {
-        padding: 8px 12px;
-        font-size: 13px;
-    }
+  .chat-input-form .send-button,
+  .chat-input-form .stop-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
 
-    .upload-icon-button {
-        width: 38px;
-        height: 38px;
-    }
+  .upload-icon-button {
+    width: 38px;
+    height: 38px;
+  }
   .message-content {
     max-width: 98%;
   }
@@ -1519,30 +1527,40 @@ button:disabled {
   }
 }
 
-.auth-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    overflow-y: auto;
-    background: radial-gradient(circle at 50% 30%, rgba(82, 132, 133, 0.15), transparent 70%), #0e0f12;
+/* ========================= AUTH MODAL & SCREENS ========================= */
+
+.auth-loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #0e0f12;
+  color: #949aa5;
+  gap: 16px;
 }
 
-.auth-card {
-    width: 100%;
-    max-width: 440px;
-    max-height: calc(100dvh - 32px);
-    overflow-y: auto;
-    margin: auto;
-    padding: 36px 32px;
-    border: 1px solid #292a34;
-    border-radius: 18px;
-    background: #14151b;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.1) inset;
-    animation: authCardFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+.auth-loading-logo {
+  width: 48px;
+  height: 48px;
+  font-size: 22px;
+  animation: authPulse 1.5s infinite ease-in-out;
+}
+
+@keyframes authPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+.auth-overlay {
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -1551,10 +1569,11 @@ button:disabled {
   justify-content: center;
   padding: 16px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   background:
     radial-gradient(
       circle at 50% 30%,
-      rgba(82, 132, 133, 0.15),
+      rgba(82, 132, 133, 0.18),
       transparent 70%
     ),
     #0e0f12;
@@ -1563,10 +1582,8 @@ button:disabled {
 .auth-card {
   width: 100%;
   max-width: 440px;
-  max-height: calc(100dvh - 32px);
-  overflow-y: auto;
   margin: auto;
-  padding: 36px 32px;
+  padding: 34px 30px;
   border: 1px solid #292a34;
   border-radius: 18px;
   background: #14151b;
@@ -1679,12 +1696,12 @@ button:disabled {
 }
 
 .auth-field input {
-  padding: 11px 14px;
+  padding: 12px 14px;
   border: 1px solid #2a2b36;
   border-radius: 10px;
   background: #0d0e12;
   color: #f8fafc;
-  font-size: 14px;
+  font-size: 16px; /* 16px prevents iOS Safari auto-zoom on input focus */
   transition: all 0.2s ease;
 }
 
@@ -1701,12 +1718,13 @@ button:disabled {
 
 .auth-submit-button {
   margin-top: 6px;
-  padding: 12px;
+  padding: 13px;
+  min-height: 46px;
   border: none;
   border-radius: 10px;
   background: #528485;
   color: #ffffff;
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1745,6 +1763,75 @@ button:disabled {
 
 .auth-switch-link:hover {
   color: #92d4d5;
+}
+
+@media (max-width: 600px) {
+  .auth-overlay {
+    padding: 12px;
+    align-items: center;
+  }
+
+  .auth-card {
+    padding: 22px 18px;
+    border-radius: 14px;
+    max-width: 100%;
+  }
+
+  .auth-header {
+    margin-bottom: 16px;
+  }
+
+  .auth-brand-logo {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .auth-header h2 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .auth-header p {
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+
+  .auth-tabs {
+    margin-bottom: 16px;
+    padding: 3px;
+  }
+
+  .auth-tab {
+    padding: 8px 0;
+    font-size: 13.5px;
+  }
+
+  .auth-form {
+    gap: 14px;
+  }
+
+  .auth-field label {
+    font-size: 12.5px;
+  }
+
+  .auth-field input {
+    font-size: 16px;
+    padding: 12px 14px;
+    border-radius: 9px;
+  }
+
+  .auth-submit-button {
+    min-height: 46px;
+    font-size: 15px;
+    margin-top: 4px;
+  }
+
+  .auth-footer {
+    margin-top: 18px;
+    font-size: 12.5px;
+  }
 }
 
 /* ========================= SIDEBAR USER PROFILE FOOTER ========================= */
