@@ -47,8 +47,27 @@ async function getRecentMessages(conversationId, limit = 10) {
   return result.rows;
 }
 
+async function deleteMessagesFrom(conversationId, messageId) {
+  const result = await db.query(
+    `
+    DELETE FROM messages
+    WHERE conversation_id = $1
+      AND created_at >= (
+        SELECT created_at
+        FROM messages
+        WHERE id = $2 AND conversation_id = $1
+      )
+    RETURNING id
+    `,
+    [conversationId, messageId],
+  );
+
+  return result.rows;
+}
+
 module.exports = {
   createMessage,
   getMessages,
   getRecentMessages,
+  deleteMessagesFrom,
 };

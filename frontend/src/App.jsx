@@ -432,6 +432,7 @@ function App() {
           <ChatWindow
             conversation={activeConversation}
             messages={messages}
+            user={user}
             loading={loading}
             sending={sending}
             uploading={uploading}
@@ -442,10 +443,17 @@ function App() {
             onSendMessage={handleSendMessage}
             onEditMessage={handleEditMessage}
             onStopStreaming={handleStopStreaming}
+            onLogout={handleLogout}
             onOpenSidebar={() => setSidebarOpen(true)}
           />
         ) : (
-          <WelcomeScreen onNewChat={handleNewChat} creating={creating} />
+          <WelcomeScreen
+            user={user}
+            onNewChat={handleNewChat}
+            creating={creating}
+            onLogout={handleLogout}
+            onOpenSidebar={() => setSidebarOpen(true)}
+          />
         )}
       </div>
     </div>

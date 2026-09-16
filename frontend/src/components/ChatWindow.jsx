@@ -1,4 +1,5 @@
-import { useEffect, useRef, memo } from "react";
+import { useEffect, useRef, useState, memo } from "react";
+import { LogOut, User } from "lucide-react";
 import ChatInput from "./ChatInput";
 import ErrorMessage from "./ErrorMessage";
 import Message from "./Message";
@@ -6,6 +7,7 @@ import Message from "./Message";
 function ChatWindow({
   conversation,
   messages,
+  user,
   loading,
   sending,
   uploading,
@@ -16,8 +18,10 @@ function ChatWindow({
   onSendMessage,
   onEditMessage,
   onStopStreaming,
+  onLogout,
   onOpenSidebar,
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const containerRef = useRef(null);
 
   // Fast direct scroll to latest token without animation lag
@@ -29,6 +33,7 @@ function ChatWindow({
   }, [messages, sending]);
 
   const hasDocument = Boolean(conversation?.document_id);
+  const initial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
 
   return (
     <main className="chat-window">
@@ -61,6 +66,50 @@ function ChatWindow({
             </p>
           </div>
         </div>
+
+        {/* Account Badge & Dropdown Menu */}
+        {user && (
+          <div className="header-user-wrapper">
+            <button
+              type="button"
+              className="header-user-badge"
+              onClick={() => setMenuOpen((prev) => !prev)}
+              title="Account Menu"
+            >
+              <div className="header-user-avatar">{initial}</div>
+              <span className="header-user-name">{user.name}</span>
+            </button>
+
+            {menuOpen && (
+              <>
+                <div
+                  className="user-menu-backdrop"
+                  onClick={() => setMenuOpen(false)}
+                />
+                <div className="user-menu-dropdown">
+                  <div className="user-menu-info">
+                    <User size={16} className="user-menu-icon" />
+                    <div>
+                      <strong>{user.name}</strong>
+                      <p>{user.email}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="user-menu-logout"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onLogout();
+                    }}
+                  >
+                    <LogOut size={15} />
+                    <span>Log Out</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </header>
 
       {/* ================= ERROR ================= */}

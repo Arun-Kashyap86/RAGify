@@ -22,7 +22,7 @@ async function chat(req, res) {
   res.on("close", handleClientClose);
 
   try {
-    const { conversationId, message } = req.body;
+    const { conversationId, message, editMessageId } = req.body;
 
     if (!conversationId || !message || !message.trim()) {
       return res.status(400).json({
@@ -36,7 +36,18 @@ async function chat(req, res) {
       });
     }
 
+    if (editMessageId && !isUUID(editMessageId)) {
+      return res.status(400).json({
+        message: "Invalid edit message ID",
+      });
+    }
+
     const userId = req.user?.id || null;
+
+    // If editing a previous message, delete all messages from that point onward first
+    if (editMessageId) {
+      await messageModel.deleteMessagesFrom(conversationId, editMessageId);
+    }
 
     const [conversation, previousMessages] = await Promise.all([
       conversationModel.getConversation(conversationId, userId),
@@ -64,6 +75,16 @@ async function chat(req, res) {
       "user",
       message.trim(),
     );
+
+    saveUserMessagePromise
+      .then((savedUserMsg) => {
+        if (!res.writableEnded && !signal.aborted && savedUserMsg?.id) {
+          res.write(
+            `data: ${JSON.stringify({ userMessageId: savedUserMsg.id })}\n\n`,
+          );
+        }
+      })
+      .catch(() => {});
 
     // Setup Server-Sent Events headers
     res.setHeader("Content-Type", "text/event-stream");
@@ -147,7 +168,17 @@ async function chat(req, res) {
 
     // Persist user and assistant messages
     await saveUserMessagePromise;
-    await messageModel.createMessage(conversationId, "assistant", answer);
+    const assistantMsg = await messageModel.createMessage(
+      conversationId,
+      "assistant",
+      answer,
+    );
+
+    if (!res.writableEnded && !signal.aborted && assistantMsg?.id) {
+      res.write(
+        `data: ${JSON.stringify({ assistantMessageId: assistantMsg.id })}\n\n`,
+      );
+    }
 
     // Conclude response stream immediately so UI is responsive without any lag
     if (!res.writableEnded && !signal.aborted) {
