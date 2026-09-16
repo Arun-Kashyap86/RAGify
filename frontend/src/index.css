@@ -20,19 +20,16 @@
 html,
 body,
 #root {
-<<<<<<< HEAD
     width: 100%;
     height: 100%;
     height: 100dvh;
     margin: 0;
     overflow: hidden;
-=======
   width: 100%;
   height: 100%;
   height: 100dvh;
   margin: 0;
   overflow: hidden;
->>>>>>> 11f341e8f5c70274e0e15185cbacb2cd275fbefc
 }
 
 body {
@@ -54,12 +51,9 @@ button:disabled {
   opacity: 0.6;
 }
 
-/* =========================
-   APPLICATION LAYOUT
-========================= */
+/* ========================= APPLICATION LAYOUT ========================= */
 
 .app {
-<<<<<<< HEAD
     display: flex;
     width: 100%;
     height: 100vh;
@@ -73,7 +67,6 @@ button:disabled {
     height: 100vh;
     height: 100dvh;
     overflow: hidden;
-=======
   display: flex;
   width: 100%;
   height: 100vh;
@@ -87,12 +80,9 @@ button:disabled {
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
->>>>>>> 11f341e8f5c70274e0e15185cbacb2cd275fbefc
 }
 
-/* =========================
-   SIDEBAR
-========================= */
+/* ========================= SIDEBAR ========================= */
 
 .sidebar {
   display: flex;
@@ -137,9 +127,7 @@ button:disabled {
   border-radius: 10px;
 }
 
-/* =========================
-   BUTTONS
-========================= */
+/* ========================= BUTTONS ========================= */
 
 .new-chat-button,
 .welcome-button,
@@ -173,9 +161,7 @@ button:disabled {
   border-radius: 9px;
 }
 
-/* =========================
-   CONVERSATION LIST
-========================= */
+/* ========================= CONVERSATION LIST ========================= */
 
 .conversation-list {
   flex: 1;
@@ -272,9 +258,7 @@ button:disabled {
   color: #f87171;
 }
 
-/* =========================
-   UPLOAD PROGRESS
-========================= */
+/* ========================= UPLOAD PROGRESS ========================= */
 
 .input-wrapper {
   width: 100%;
@@ -341,9 +325,7 @@ button:disabled {
   }
 }
 
-/* =========================
-   GLOBAL ERROR
-========================= */
+/* ========================= GLOBAL ERROR ========================= */
 
 .global-error {
   position: fixed;
@@ -354,12 +336,9 @@ button:disabled {
   transform: translateX(-50%);
 }
 
-/* =========================
-   WELCOME SCREEN
-========================= */
+/* ========================= WELCOME SCREEN ========================= */
 
 .welcome-screen {
-<<<<<<< HEAD
     display: grid;
     min-height: 100vh;
     min-height: 100dvh;
@@ -367,7 +346,6 @@ button:disabled {
     place-items: center;
     padding: 30px 20px;
     overflow-y: auto;
-=======
   display: grid;
   min-height: 100vh;
   min-height: 100dvh;
@@ -375,7 +353,6 @@ button:disabled {
   place-items: center;
   padding: 30px 20px;
   overflow-y: auto;
->>>>>>> 11f341e8f5c70274e0e15185cbacb2cd275fbefc
 }
 
 .welcome-content {
@@ -410,12 +387,9 @@ button:disabled {
   border-radius: 9px;
 }
 
-/* =========================
-   CHAT WINDOW
-========================= */
+/* ========================= CHAT WINDOW ========================= */
 
 .chat-window {
-<<<<<<< HEAD
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -423,7 +397,6 @@ button:disabled {
     height: 100dvh;
     overflow: hidden;
     background: #18191f;
-=======
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -431,7 +404,6 @@ button:disabled {
   height: 100dvh;
   overflow: hidden;
   background: #18191f;
->>>>>>> 11f341e8f5c70274e0e15185cbacb2cd275fbefc
 }
 
 .chat-header {
@@ -465,9 +437,7 @@ button:disabled {
   font-size: 13px;
 }
 
-/* =========================
-   ERROR MESSAGE
-========================= */
+/* ========================= ERROR MESSAGE ========================= */
 
 .chat-error {
   width: 100%;
@@ -498,9 +468,7 @@ button:disabled {
   color: inherit;
 }
 
-/* =========================
-   MESSAGES
-========================= */
+/* ========================= MESSAGES ========================= */
 
 .messages-container {
   flex: 1;
@@ -650,9 +618,7 @@ button:disabled {
   background: #18191f;
 }
 
-/* =========================
-   MARKDOWN TABLE STYLES
-========================= */
+/* ========================= MARKDOWN TABLE STYLES ========================= */
 
 .assistant-message table {
   width: 100%;
@@ -776,9 +742,7 @@ button:disabled {
   }
 }
 
-/* =========================
-   MESSAGE COPY BUTTON
-========================= */
+/* ========================= MESSAGE COPY BUTTON ========================= */
 
 .message-actions {
   display: flex;
@@ -815,9 +779,7 @@ button:disabled {
   color: #e2e8f0;
 }
 
-/* =========================
-   MESSAGE EDIT
-========================= */
+/* ========================= MESSAGE EDIT ========================= */
 
 .message-edit-container {
   display: flex;
@@ -889,9 +851,7 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* =========================
-   MESSAGE EDIT
-========================= */
+/* ========================= MESSAGE EDIT ========================= */
 
 .message-edit-container {
     display: flex;
@@ -962,9 +922,7 @@ button:disabled {
 }
 
 
-/* =========================
-   CHAT INPUT
-========================= */
+/* ========================= CHAT INPUT ========================= */
 
 .chat-input-container {
   flex-shrink: 0;
@@ -1008,9 +966,7 @@ button:disabled {
   color: #707681;
 }
 
-/* =========================
-   SEND & STOP BUTTON
-========================= */
+/* ========================= SEND & STOP BUTTON ========================= */
 
 .chat-input-form .send-button,
 .chat-input-form .stop-button {
@@ -1047,9 +1003,7 @@ button:disabled {
   transform: scale(0.96);
 }
 
-/* =========================
-   FILE UPLOAD BUTTON
-========================= */
+/* ========================= FILE UPLOAD BUTTON ========================= */
 
 .upload-icon-button {
   display: grid;
@@ -1099,9 +1053,7 @@ button:disabled {
     transform: translateY(0);
   }
 }
-/* =========================
-   HEADER ACCOUNT USER PROFILE
-========================= */
+/* ========================= HEADER ACCOUNT USER PROFILE ========================= */
 
 .welcome-header {
     display: flex;
@@ -1290,9 +1242,7 @@ button:disabled {
   display: none;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
+/* ========================= RESPONSIVE ========================= */
 
 @media (max-width: 760px) {
   .app {
@@ -1393,7 +1343,6 @@ button:disabled {
 }
 
 @media (max-width: 500px) {
-<<<<<<< HEAD
     .header-user-name {
         display: none;
     }
@@ -1429,11 +1378,9 @@ button:disabled {
         min-height: 60px;
         padding: 10px 12px;
     }
-=======
   .auth-overlay {
     padding: 12px;
   }
->>>>>>> 11f341e8f5c70274e0e15185cbacb2cd275fbefc
 
   .auth-card {
     padding: 24px 18px;
@@ -1441,7 +1388,6 @@ button:disabled {
     max-height: calc(100dvh - 24px);
   }
 
-<<<<<<< HEAD
     .chat-title p {
         font-size: 11.5px;
     }
@@ -1449,7 +1395,6 @@ button:disabled {
     .messages-container {
         padding: 14px 10px;
     }
-=======
   .auth-header {
     margin-bottom: 18px;
   }
@@ -1457,7 +1402,6 @@ button:disabled {
   .auth-header h2 {
     font-size: 19px;
   }
->>>>>>> 11f341e8f5c70274e0e15185cbacb2cd275fbefc
 
   .auth-header p {
     font-size: 12.5px;
@@ -1476,21 +1420,17 @@ button:disabled {
     font-size: 11.5px;
   }
 
-<<<<<<< HEAD
     .chat-input-container {
         padding: 8px 8px 12px;
     }
-=======
   .messages-container {
     padding: 14px 10px;
   }
->>>>>>> 11f341e8f5c70274e0e15185cbacb2cd275fbefc
 
   .message {
     font-size: 14px;
   }
 
-<<<<<<< HEAD
     .chat-input-form textarea {
         min-height: 38px;
         padding: 8px 8px;
@@ -1507,7 +1447,6 @@ button:disabled {
         width: 38px;
         height: 38px;
     }
-=======
   .message-content {
     max-width: 98%;
   }
@@ -1546,12 +1485,9 @@ button:disabled {
     width: 38px;
     height: 38px;
   }
->>>>>>> 11f341e8f5c70274e0e15185cbacb2cd275fbefc
 }
 
-/* =========================
-   AUTH MODAL & SCREENS
-========================= */
+/* ========================= AUTH MODAL & SCREENS ========================= */
 
 .auth-loading-screen {
   display: flex;
@@ -1584,7 +1520,6 @@ button:disabled {
 }
 
 .auth-overlay {
-<<<<<<< HEAD
     position: fixed;
     inset: 0;
     z-index: 1000;
@@ -1608,7 +1543,6 @@ button:disabled {
     background: #14151b;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.1) inset;
     animation: authCardFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-=======
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -1640,7 +1574,6 @@ button:disabled {
     0 20px 60px rgba(0, 0, 0, 0.55),
     0 0 1px rgba(255, 255, 255, 0.1) inset;
   animation: authCardFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
->>>>>>> 11f341e8f5c70274e0e15185cbacb2cd275fbefc
 }
 
 @keyframes authCardFade {
@@ -1814,9 +1747,7 @@ button:disabled {
   color: #92d4d5;
 }
 
-/* =========================
-   SIDEBAR USER PROFILE FOOTER
-========================= */
+/* ========================= SIDEBAR USER PROFILE FOOTER ========================= */
 
 .sidebar-footer {
   display: flex;
