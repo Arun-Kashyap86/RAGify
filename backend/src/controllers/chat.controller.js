@@ -102,29 +102,6 @@ async function chat(req, res) {
       }
     };
 
-    // Start title generation in background for new conversations (does not delay stream completion)
-    if (isFirstMessage) {
-      (async () => {
-        try {
-          const title = await generateConversationTitle(message.trim());
-          if (title) {
-            await conversationModel.updateConversationTitle(
-              conversationId,
-              title,
-            );
-            if (!res.writableEnded && !signal.aborted) {
-              res.write(`data: ${JSON.stringify({ title })}\n\n`);
-            }
-          }
-        } catch (titleError) {
-          console.error(
-            "Title generation error:",
-            titleError.message || titleError,
-          );
-        }
-      })();
-    }
-
     // 1. Generate and stream the response (RAG + Chat or Only Chat)
     if (conversation.document_id) {
       answer = await ragService.answerQuestionStream(
@@ -149,6 +126,29 @@ async function chat(req, res) {
       ];
 
       answer = await generateAnswerStream(messages, sendChunk, { signal });
+    }
+
+    // Start title generation in background for new conversations (does not delay stream completion)
+    if (isFirstMessage) {
+      (async () => {
+        try {
+          const title = await generateConversationTitle(message.trim());
+          if (title) {
+            await conversationModel.updateConversationTitle(
+              conversationId,
+              title,
+            );
+            if (!res.writableEnded && !signal.aborted) {
+              res.write(`data: ${JSON.stringify({ title })}\n\n`);
+            }
+          }
+        } catch (titleError) {
+          console.error(
+            "Title generation error:",
+            titleError.message || titleError,
+          );
+        }
+      })();
     }
 
     // If client aborted during stream generation
