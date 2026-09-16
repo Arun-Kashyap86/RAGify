@@ -74,14 +74,6 @@ button:disabled {
   overflow: hidden;
 }
 
-.main-content {
-  flex: 1;
-  min-width: 0;
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
-}
-
 /* ========================= SIDEBAR ========================= */
 
 .sidebar {
@@ -301,11 +293,6 @@ button:disabled {
 
 .upload-progress-bar {
   transition: width 0.25s ease;
-}
-
-.processing-bar {
-  width: 35%;
-  animation: processingMove 1.2s ease-in-out infinite;
 }
 
 .processing-text {
@@ -777,78 +764,6 @@ button:disabled {
 .message-action-button:hover {
   background: #263247;
   color: #e2e8f0;
-}
-
-/* ========================= MESSAGE EDIT ========================= */
-
-.message-edit-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  max-width: 100%;
-}
-
-.message-edit-textarea {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #528485;
-  border-radius: 12px;
-  background: #22242c;
-  color: #f4f7f8;
-  font-size: 15px;
-  line-height: 1.6;
-  resize: vertical;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.message-edit-textarea:focus {
-  border-color: #72babb;
-}
-
-.message-edit-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.message-edit-cancel,
-.message-edit-save {
-  padding: 6px 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    transform 0.15s ease;
-}
-
-.message-edit-cancel {
-  background: #2a2b33;
-  color: #a0a5b0;
-}
-
-.message-edit-cancel:hover {
-  background: #35363f;
-  color: #e2e5e9;
-}
-
-.message-edit-save {
-  background: #528485;
-  color: #ffffff;
-}
-
-.message-edit-save:hover:not(:disabled) {
-  background: #72babb;
-  transform: translateY(-1px);
-}
-
-.message-edit-save:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* ========================= MESSAGE EDIT ========================= */
@@ -1431,6 +1346,7 @@ button:disabled {
   .chat-input-container {
     padding: 8px 8px 12px;
   }
+
   .messages-container {
     padding: 14px 10px;
   }
@@ -1439,22 +1355,6 @@ button:disabled {
     font-size: 14px;
   }
 
-  .chat-input-form textarea {
-    min-height: 38px;
-    padding: 8px 8px;
-    font-size: 14px;
-  }
-
-  .chat-input-form .send-button,
-  .chat-input-form .stop-button {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-
-  .upload-icon-button {
-    width: 38px;
-    height: 38px;
-  }
   .message-content {
     max-width: 98%;
   }
@@ -1465,10 +1365,6 @@ button:disabled {
 
   .assistant-message {
     padding: 11px 12px;
-  }
-
-  .chat-input-container {
-    padding: 8px 8px 12px;
   }
 
   .chat-input-form {
@@ -1492,38 +1388,6 @@ button:disabled {
   .upload-icon-button {
     width: 38px;
     height: 38px;
-  }
-}
-
-/* ========================= AUTH MODAL & SCREENS ========================= */
-
-.auth-loading-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: #0e0f12;
-  color: #949aa5;
-  gap: 16px;
-}
-
-.auth-loading-logo {
-  width: 48px;
-  height: 48px;
-  font-size: 22px;
-  animation: authPulse 1.5s infinite ease-in-out;
-}
-
-@keyframes authPulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 1;
   }
 }
 
