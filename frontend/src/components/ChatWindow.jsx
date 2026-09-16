@@ -14,6 +14,7 @@ function ChatWindow({
   onClearError,
   onUpload,
   onSendMessage,
+  onEditMessage,
   onStopStreaming,
   onOpenSidebar,
 }) {
@@ -99,6 +100,7 @@ function ChatWindow({
           messages.map((message, index) => (
             <Message
               key={message.id}
+              id={message.id}
               role={message.role}
               content={message.content}
               isStreaming={
@@ -106,6 +108,8 @@ function ChatWindow({
                 index === messages.length - 1 &&
                 message.role === "assistant"
               }
+              onEditSubmit={onEditMessage}
+              disabled={sending}
             />
           ))}
       </section>

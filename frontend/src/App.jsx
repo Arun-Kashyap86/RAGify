@@ -208,7 +208,7 @@ function App() {
     setSending(false);
   }
 
-  async function handleSendMessage(message) {
+  async function handleSendMessage(message, editMessageId = null) {
     if (!activeConversation || sending) return;
 
     const conversationId = activeConversation.id;
@@ -256,6 +256,7 @@ function App() {
       abortControllerRef.current = controller;
 
       await streamMessage(conversationId, message, {
+        editMessageId,
         signal: controller.signal,
         onChunk: (token) => {
           pendingChunk += token;
@@ -273,6 +274,20 @@ function App() {
           setConversations((current) =>
             current.map((c) =>
               c.id === conversationId ? { ...c, title: newTitle } : c,
+            ),
+          );
+        },
+        onUserMessageId: (realId) => {
+          setMessages((current) =>
+            current.map((msg) =>
+              msg.id === userMessage.id ? { ...msg, id: realId } : msg,
+            ),
+          );
+        },
+        onAssistantMessageId: (realId) => {
+          setMessages((current) =>
+            current.map((msg) =>
+              msg.id === assistantMessageId ? { ...msg, id: realId } : msg,
             ),
           );
         },
@@ -336,6 +351,20 @@ function App() {
       abortControllerRef.current = null;
       setSending(false);
     }
+  }
+
+  function handleEditMessage(messageId, newContent) {
+    if (!activeConversation || sending) return;
+
+    // Find index of the message being edited
+    const targetIndex = messages.findIndex((m) => m.id === messageId);
+    if (targetIndex === -1) return;
+
+    // Truncate messages from that point onward in UI state
+    setMessages((current) => current.slice(0, targetIndex));
+
+    // Re-send the edited message with the editMessageId
+    handleSendMessage(newContent, messageId);
   }
 
   async function handleDeleteConversation(id) {
@@ -411,6 +440,7 @@ function App() {
             onClearError={() => setError("")}
             onUpload={handleUpload}
             onSendMessage={handleSendMessage}
+            onEditMessage={handleEditMessage}
             onStopStreaming={handleStopStreaming}
             onOpenSidebar={() => setSidebarOpen(true)}
           />

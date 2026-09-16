@@ -16,6 +16,7 @@ body,
 #root {
     width: 100%;
     height: 100%;
+    height: 100dvh;
     margin: 0;
     overflow: hidden;
 }
@@ -48,6 +49,7 @@ button:disabled {
     display: flex;
     width: 100%;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
@@ -55,6 +57,7 @@ button:disabled {
     flex: 1;
     min-width: 0;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
@@ -335,8 +338,11 @@ button:disabled {
 .welcome-screen {
     display: grid;
     min-height: 100vh;
+    min-height: 100dvh;
+    height: 100%;
     place-items: center;
-    padding: 30px;
+    padding: 30px 20px;
+    overflow-y: auto;
 }
 
 .welcome-content {
@@ -381,6 +387,7 @@ button:disabled {
     flex-direction: column;
     width: 100%;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     background: #18191f;
 }
@@ -756,6 +763,79 @@ button:disabled {
 
 
 /* =========================
+   MESSAGE EDIT
+========================= */
+
+.message-edit-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 100%;
+}
+
+.message-edit-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #528485;
+    border-radius: 12px;
+    background: #22242c;
+    color: #f4f7f8;
+    font-size: 15px;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.message-edit-textarea:focus {
+    border-color: #72babb;
+}
+
+.message-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.message-edit-cancel,
+.message-edit-save {
+    padding: 6px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.message-edit-cancel {
+    background: #2a2b33;
+    color: #a0a5b0;
+}
+
+.message-edit-cancel:hover {
+    background: #35363f;
+    color: #e2e5e9;
+}
+
+.message-edit-save {
+    background: #528485;
+    color: #ffffff;
+}
+
+.message-edit-save:hover:not(:disabled) {
+    background: #72babb;
+    transform: translateY(-1px);
+}
+
+.message-edit-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* =========================
    CHAT INPUT
 ========================= */
 
@@ -1040,8 +1120,31 @@ button:disabled {
 }
 
 @media (max-width: 500px) {
+    .auth-overlay {
+        padding: 12px;
+    }
+
+    .auth-card {
+        padding: 24px 18px;
+        border-radius: 14px;
+        max-height: calc(100dvh - 24px);
+    }
+
+    .auth-header {
+        margin-bottom: 18px;
+    }
+
+    .auth-header h2 {
+        font-size: 19px;
+    }
+
+    .auth-header p {
+        font-size: 12.5px;
+    }
+
     .chat-header {
-        min-height: 70px;
+        min-height: 60px;
+        padding: 10px 12px;
     }
 
     .chat-title h1 {
@@ -1049,11 +1152,11 @@ button:disabled {
     }
 
     .chat-title p {
-        font-size: 12px;
+        font-size: 11.5px;
     }
 
     .messages-container {
-        padding: 18px 12px;
+        padding: 14px 10px;
     }
 
     .message {
@@ -1073,7 +1176,7 @@ button:disabled {
     }
 
     .chat-input-container {
-        padding: 10px 8px 14px;
+        padding: 8px 8px 12px;
     }
 
     .chat-input-form {
@@ -1083,19 +1186,20 @@ button:disabled {
     }
 
     .chat-input-form textarea {
-        min-height: 42px;
-        padding: 10px 8px;
+        min-height: 38px;
+        padding: 8px 8px;
+        font-size: 14px;
     }
 
     .chat-input-form .send-button,
     .chat-input-form .stop-button {
-        padding: 10px 12px;
+        padding: 8px 12px;
         font-size: 13px;
     }
 
     .upload-icon-button {
-        width: 40px;
-        height: 40px;
+        width: 38px;
+        height: 38px;
     }
 }
 
@@ -1134,13 +1238,17 @@ button:disabled {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 16px;
+    overflow-y: auto;
     background: radial-gradient(circle at 50% 30%, rgba(82, 132, 133, 0.15), transparent 70%), #0e0f12;
 }
 
 .auth-card {
     width: 100%;
     max-width: 440px;
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    margin: auto;
     padding: 36px 32px;
     border: 1px solid #292a34;
     border-radius: 18px;
