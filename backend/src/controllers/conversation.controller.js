@@ -94,8 +94,8 @@ async function deleteConversation(req, res) {
 
     if (conversation.document_id) {
       try {
-        await deleteDocumentVectors(conversation.document_id, userId);
-        await documentModel.deleteDocument(conversation.document_id, userId);
+        await deleteDocumentVectors(conversation.document_id);
+        await documentModel.deleteDocument(conversation.document_id);
       } catch (docCleanupErr) {
         console.error(
           "Error cleaning up document resources:",

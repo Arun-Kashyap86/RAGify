@@ -116,7 +116,7 @@ function ChatInput({
             uploading
               ? "Please wait..."
               : isStreaming
-                ? "Generating answer... Press Esc or Stop to cancel"
+                ? "Generating answer..."
                 : "Ask anything or upload a PDF..."
           }
           onChange={(event) => setMessage(event.target.value)}

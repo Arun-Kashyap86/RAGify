@@ -22,7 +22,7 @@ async function chat(req, res) {
   res.on("close", handleClientClose);
 
   try {
-    const { conversationId, message, editMessageId } = req.body;
+    const { conversationId, message } = req.body;
 
     if (!conversationId || !message || !message.trim()) {
       return res.status(400).json({
@@ -36,18 +36,7 @@ async function chat(req, res) {
       });
     }
 
-    if (editMessageId && !isUUID(editMessageId)) {
-      return res.status(400).json({
-        message: "Invalid edit message ID",
-      });
-    }
-
     const userId = req.user?.id || null;
-
-    // If editing a previous message, delete all messages from that point onward first
-    if (editMessageId) {
-      await messageModel.deleteMessagesFrom(conversationId, editMessageId);
-    }
 
     const [conversation, previousMessages] = await Promise.all([
       conversationModel.getConversation(conversationId, userId),
@@ -76,16 +65,6 @@ async function chat(req, res) {
       message.trim(),
     );
 
-    saveUserMessagePromise
-      .then((savedUserMsg) => {
-        if (!res.writableEnded && !signal.aborted && savedUserMsg?.id) {
-          res.write(
-            `data: ${JSON.stringify({ userMessageId: savedUserMsg.id })}\n\n`,
-          );
-        }
-      })
-      .catch(() => {});
-
     // Setup Server-Sent Events headers
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache, no-transform");
@@ -109,7 +88,7 @@ async function chat(req, res) {
         conversation.document_id,
         chatHistory,
         sendChunk,
-        { signal, userId },
+        { signal },
       );
     } else {
       const messages = [
@@ -126,29 +105,6 @@ async function chat(req, res) {
       ];
 
       answer = await generateAnswerStream(messages, sendChunk, { signal });
-    }
-
-    // Start title generation in background for new conversations (does not delay stream completion)
-    if (isFirstMessage) {
-      (async () => {
-        try {
-          const title = await generateConversationTitle(message.trim());
-          if (title) {
-            await conversationModel.updateConversationTitle(
-              conversationId,
-              title,
-            );
-            if (!res.writableEnded && !signal.aborted) {
-              res.write(`data: ${JSON.stringify({ title })}\n\n`);
-            }
-          }
-        } catch (titleError) {
-          console.error(
-            "Title generation error:",
-            titleError.message || titleError,
-          );
-        }
-      })();
     }
 
     // If client aborted during stream generation
@@ -168,19 +124,30 @@ async function chat(req, res) {
 
     // Persist user and assistant messages
     await saveUserMessagePromise;
-    const assistantMsg = await messageModel.createMessage(
-      conversationId,
-      "assistant",
-      answer,
-    );
+    await messageModel.createMessage(conversationId, "assistant", answer);
 
-    if (!res.writableEnded && !signal.aborted && assistantMsg?.id) {
-      res.write(
-        `data: ${JSON.stringify({ assistantMessageId: assistantMsg.id })}\n\n`,
-      );
+    // 2. Generate conversation title after response generation (for new conversations)
+    if (isFirstMessage && !signal.aborted) {
+      try {
+        const title = await generateConversationTitle(message.trim());
+        if (title) {
+          await conversationModel.updateConversationTitle(
+            conversationId,
+            title,
+          );
+          if (!res.writableEnded && !signal.aborted) {
+            res.write(`data: ${JSON.stringify({ title })}\n\n`);
+          }
+        }
+      } catch (titleError) {
+        console.error(
+          "Title generation error:",
+          titleError.message || titleError,
+        );
+      }
     }
 
-    // Conclude response stream immediately so UI is responsive without any lag
+    // 3. Conclude response stream
     if (!res.writableEnded && !signal.aborted) {
       res.write("data: [DONE]\n\n");
       res.end();

@@ -33,16 +33,6 @@ async function ensureCollection(vectorSize) {
       // Index may already exist
     }
 
-    try {
-      await client.createPayloadIndex(COLLECTION_NAME, {
-        field_name: "userId",
-        field_schema: "keyword",
-        wait: true,
-      });
-    } catch (error) {
-      // Index may already exist
-    }
-
     collectionInitialized = true;
   } catch (error) {
     console.error("Failed to initialize Qdrant collection:", error.message);
@@ -50,7 +40,7 @@ async function ensureCollection(vectorSize) {
   }
 }
 
-async function storeChunks(documentId, chunks, embeddings, userId = null) {
+async function storeChunks(documentId, chunks, embeddings) {
   if (!embeddings || embeddings.length === 0) {
     throw new Error("No embeddings provided");
   }
@@ -67,77 +57,39 @@ async function storeChunks(documentId, chunks, embeddings, userId = null) {
     id: uuidv4(),
     vector: embeddings[index],
     payload: {
-      userId: userId ? String(userId) : null,
       documentId: String(documentId),
       chunkIndex: index,
       text: chunk,
     },
   }));
 
-  // Upsert in smaller batches of 25 with retries to avoid payload limits and ECONNRESET timeouts
-  const BATCH_SIZE = 25;
+  // Upsert in batches of 100 to avoid payload size/timeout limits
+  const BATCH_SIZE = 100;
   for (let i = 0; i < points.length; i += BATCH_SIZE) {
     const batch = points.slice(i, i + BATCH_SIZE);
-    let retries = 3;
-
-    while (retries > 0) {
-      try {
-        await client.upsert(COLLECTION_NAME, {
-          wait: true,
-          points: batch,
-        });
-        break;
-      } catch (upsertError) {
-        retries--;
-        const isNetworkErr =
-          upsertError.cause?.code === "ECONNRESET" ||
-          upsertError.message?.includes("fetch failed");
-
-        if (retries > 0 && isNetworkErr) {
-          console.warn(
-            `Qdrant upsert batch failed (${upsertError.cause?.code || upsertError.message}), retrying... (${retries} retries left)`,
-          );
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        } else {
-          throw upsertError;
-        }
-      }
-    }
+    await client.upsert(COLLECTION_NAME, {
+      wait: true,
+      points: batch,
+    });
   }
 
   console.log(`${points.length} chunks stored in Qdrant`);
 }
 
-async function searchChunks(
-  queryEmbedding,
-  documentId,
-  userId = null,
-  limit = 3,
-) {
-  const must = [
-    {
-      key: "documentId",
-      match: {
-        value: String(documentId),
-      },
-    },
-  ];
-
-  if (userId) {
-    must.push({
-      key: "userId",
-      match: {
-        value: String(userId),
-      },
-    });
-  }
-
+async function searchChunks(queryEmbedding, documentId, limit = 3) {
   const response = await client.query(COLLECTION_NAME, {
     query: queryEmbedding,
     limit,
     with_payload: true,
     filter: {
-      must,
+      must: [
+        {
+          key: "documentId",
+          match: {
+            value: String(documentId),
+          },
+        },
+      ],
     },
   });
 
@@ -151,29 +103,19 @@ async function searchChunks(
   }));
 }
 
-async function deleteDocumentVectors(documentId, userId = null) {
-  const must = [
-    {
-      key: "documentId",
-      match: {
-        value: String(documentId),
-      },
-    },
-  ];
-
-  if (userId) {
-    must.push({
-      key: "userId",
-      match: {
-        value: String(userId),
-      },
-    });
-  }
-
+async function deleteDocumentVectors(documentId) {
   await client.delete(COLLECTION_NAME, {
     wait: true,
+
     filter: {
-      must,
+      must: [
+        {
+          key: "documentId",
+          match: {
+            value: String(documentId),
+          },
+        },
+      ],
     },
   });
 

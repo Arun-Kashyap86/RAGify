@@ -14,16 +14,7 @@ export async function sendMessage(conversationId, message) {
 export async function streamMessage(
   conversationId,
   message,
-  {
-    editMessageId,
-    onChunk,
-    onTitle,
-    onUserMessageId,
-    onAssistantMessageId,
-    onDone,
-    onError,
-    signal,
-  } = {},
+  { onChunk, onTitle, onDone, onError, signal },
 ) {
   let reader = null;
   try {
@@ -40,19 +31,14 @@ export async function streamMessage(
       return;
     }
 
-    const requestBody = {
-      conversationId,
-      message,
-    };
-    if (editMessageId) {
-      requestBody.editMessageId = editMessageId;
-    }
-
     const response = await fetch(`${BASE_URL}/chat`, {
       method: "POST",
       headers,
       signal,
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        conversationId,
+        message,
+      }),
     });
 
     if (!response.ok) {
@@ -115,12 +101,6 @@ export async function streamMessage(
         }
         if (typeof parsed.title === "string") {
           onTitle?.(parsed.title);
-        }
-        if (typeof parsed.userMessageId === "string") {
-          onUserMessageId?.(parsed.userMessageId);
-        }
-        if (typeof parsed.assistantMessageId === "string") {
-          onAssistantMessageId?.(parsed.assistantMessageId);
         }
         if (typeof parsed.token === "string") {
           onChunk?.(parsed.token);

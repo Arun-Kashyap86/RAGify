@@ -17,25 +17,10 @@ async function initDb() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS documents (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
         file_name VARCHAR(255) NOT NULL,
         file_path TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-    `);
-
-    // Ensure user_id column exists on documents for existing databases
-    await pool.query(`
-      DO $$
-      BEGIN
-        IF NOT EXISTS (
-          SELECT 1 FROM information_schema.columns
-          WHERE table_name = 'documents' AND column_name = 'user_id'
-        ) THEN
-          ALTER TABLE documents ADD COLUMN user_id UUID REFERENCES users(id) ON DELETE CASCADE;
-        END IF;
-      END
-      $$;
     `);
 
     await pool.query(`
@@ -80,11 +65,6 @@ async function initDb() {
     await pool.query(`
       CREATE INDEX IF NOT EXISTS idx_conversations_user_id_created_at
       ON conversations (user_id, created_at DESC);
-    `);
-
-    await pool.query(`
-      CREATE INDEX IF NOT EXISTS idx_documents_user_id
-      ON documents (user_id);
     `);
 
     console.log("Database tables and indexes initialized successfully");
