@@ -4,6 +4,10 @@ function WelcomeScreen({ user, onNewChat, creating, onOpenSidebar, onLogout }) {
   return (
     <main className="welcome-screen">
       <header className="welcome-header">
+        <div className="welcome-header-brand">
+          <div className="brand-logo">R</div>
+          <span>RAGify</span>
+        </div>
         <button
           type="button"
           className="mobile-menu-button"
@@ -14,11 +18,6 @@ function WelcomeScreen({ user, onNewChat, creating, onOpenSidebar, onLogout }) {
           <span></span>
           <span></span>
         </button>
-
-        <div className="welcome-header-brand">
-          <div className="brand-logo">R</div>
-          <span>RAGify</span>
-        </div>
 
         {user && (
           <div className="chat-header-right">
@@ -52,8 +51,8 @@ function WelcomeScreen({ user, onNewChat, creating, onOpenSidebar, onLogout }) {
           <h1>Start a new conversation</h1>
 
           <p>
-            Ask general questions or upload a PDF to ask questions based
-            on a document.
+            Ask general questions or upload a PDF to ask questions based on a
+            document.
           </p>
 
           <button
