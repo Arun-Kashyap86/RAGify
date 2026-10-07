@@ -1,4 +1,5 @@
 import { useEffect, useRef, memo } from "react";
+import { LogOut } from "lucide-react";
 import ChatInput from "./ChatInput";
 import ErrorMessage from "./ErrorMessage";
 import Message from "./Message";
@@ -11,11 +12,13 @@ function ChatWindow({
   uploading,
   uploadProgress,
   error,
+  user,
   onClearError,
   onUpload,
   onSendMessage,
   onStopStreaming,
   onOpenSidebar,
+  onLogout,
 }) {
   const containerRef = useRef(null);
 
@@ -60,6 +63,30 @@ function ChatWindow({
             </p>
           </div>
         </div>
+
+        {user && (
+          <div className="chat-header-right">
+            <div
+              className="header-user-badge"
+              title={`${user.name || "User"} (${user.email || ""})`}
+            >
+              <div className="header-user-avatar">
+                {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+              </div>
+              <span className="header-user-name">{user.name}</span>
+            </div>
+
+            <button
+              type="button"
+              className="header-logout-button"
+              onClick={onLogout}
+              title="Log Out"
+              aria-label="Log Out"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
+        )}
       </header>
 
       {/* ================= ERROR ================= */}

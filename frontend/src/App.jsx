@@ -408,14 +408,22 @@ function App() {
             uploading={uploading}
             uploadProgress={uploadProgress}
             error={error}
+            user={user}
             onClearError={() => setError("")}
             onUpload={handleUpload}
             onSendMessage={handleSendMessage}
             onStopStreaming={handleStopStreaming}
             onOpenSidebar={() => setSidebarOpen(true)}
+            onLogout={handleLogout}
           />
         ) : (
-          <WelcomeScreen onNewChat={handleNewChat} creating={creating} />
+          <WelcomeScreen
+            user={user}
+            onNewChat={handleNewChat}
+            creating={creating}
+            onOpenSidebar={() => setSidebarOpen(true)}
+            onLogout={handleLogout}
+          />
         )}
       </div>
     </div>
